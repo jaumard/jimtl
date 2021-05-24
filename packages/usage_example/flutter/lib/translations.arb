@@ -1,0 +1,21 @@
+{
+  "@@locale": "en",
+  "@@last_modified": "2021-05-24T20:33:23.892143",
+  "counter": "Counter",
+  "@counter": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "increment": "Increment",
+  "@increment": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "counterPushed": "You have pushed the button {number} times: ",
+  "@counterPushed": {
+    "type": "text",
+    "placeholders": {
+      "number": {}
+    }
+  }
+}
