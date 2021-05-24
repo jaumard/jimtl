@@ -14,6 +14,7 @@ import 'dart:async';
 
 import 'package:example/translations.dart';
 import 'package:flutter/widgets.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
 import 'package:intl/src/intl_helpers.dart';
@@ -133,10 +134,20 @@ class TranslationsDelegate extends LocalizationsDelegate<Translations> {
   const TranslationsDelegate(this.currentFlavor, {this.overridenLocale});
 
   @override
-  Future<Translations> load(Locale locale) => Translations.load(overridenLocale ?? locale, currentFlavor);
+  Future<Translations> load(Locale locale) => _load(overridenLocale ?? locale, currentFlavor);
 
   @override
   bool shouldReload(TranslationsDelegate old) => old.currentFlavor != currentFlavor;
+  
+  static Future<Translations> _load(Locale locale, String flavor) {
+    final name = (locale.countryCode == null || locale.countryCode!.isEmpty) ? locale.languageCode : locale.toString();
+    final localeName = Intl.canonicalizedLocale(name);
+    return initializeMessages(localeName, flavor).then((_) async {
+      Intl.defaultLocale = localeName;
+      await initializeDateFormatting(Intl.defaultLocale);
+      return Translations();
+    });
+  }
   
   @override
   bool isSupported(Locale locale) => ['fr', 'en', ].contains(locale.languageCode);

@@ -17,6 +17,7 @@ class CustomMessageGeneration extends MessageGeneration {
     if (generateFlutterDelegate) {
       output.write("import '$classImport';\n");
       output.write("import 'package:flutter/widgets.dart';\n");
+      output.write("import 'package:intl/date_symbol_data_local.dart';\n");
     }
     for (var locale in allLocales) {
       for (var flavor in flavors) {
@@ -97,10 +98,20 @@ class ${className}Delegate extends LocalizationsDelegate<$className> {
   const TranslationsDelegate(this.currentFlavor, {this.overridenLocale});
 
   @override
-  Future<Translations> load(Locale locale) => Translations.load(overridenLocale ?? locale, currentFlavor);
+  Future<$className> load(Locale locale) => _load(overridenLocale ?? locale, currentFlavor);
 
   @override
   bool shouldReload(TranslationsDelegate old) => old.currentFlavor != currentFlavor;
+  
+  static Future<$className> _load(Locale locale, String flavor) {
+    final name = (locale.countryCode == null || locale.countryCode!.isEmpty) ? locale.languageCode : locale.toString();
+    final localeName = Intl.canonicalizedLocale(name);
+    return initializeMessages(localeName, flavor).then((_) async {
+      Intl.defaultLocale = localeName;
+      await initializeDateFormatting(Intl.defaultLocale);
+      return $className();
+    });
+  }
   
   @override
   bool isSupported(Locale locale) => [""");
