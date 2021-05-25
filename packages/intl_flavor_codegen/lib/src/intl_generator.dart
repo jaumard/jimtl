@@ -6,8 +6,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:intl_flavor/intl_flavor.dart';
 import 'package:intl_flavor_codegen/src/generate_localized.dart';
-import 'package:intl_translation/extract_messages.dart';
-import 'package:intl_translation/generate_localized.dart';
+import 'package:intl_generator/extract_messages.dart';
+import 'package:intl_generator/generate_localized.dart';
 import 'package:path/path.dart' as path;
 import 'package:source_gen/source_gen.dart';
 

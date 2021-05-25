@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:intl_translation/generate_localized.dart';
+import 'package:intl_generator/generate_localized.dart';
 
 class CustomMessageGeneration extends MessageGeneration {
   final String className;

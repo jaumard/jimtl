@@ -1,7 +1,7 @@
 name: intl_flavor_codegen
 description: Intl utility to manage multi ARB files to manage flavors in your app
 version: 0.0.1
-homepage:
+homepage: https://github.com/jaumard/intl_flavors
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -13,8 +13,8 @@ dependencies:
   meta:
   path:
   source_gen:
-  intl_translation:
-    path: ../../../../StudioProjects/intl_translation
+  intl_generator: ^0.1.0
+    #path: ../../../../StudioProjects/intl_translation
   intl_flavor:
     path: ../intl_flavor
 
