@@ -63,3 +63,7 @@ You have the possibility to customize `GenerateIntl` annotation with the followi
 No dart on your side, everything is generated from your ARB files.
 
 Comming soon it's on my todo list
+
+## Examples:
+
+Take a look at the basic pure [Dart example](https://github.com/jaumard/intl_flavors/tree/master/packages/usage_example/dart) or our [Flutter example](https://github.com/jaumard/intl_flavors/tree/master/packages/usage_example/flutter).

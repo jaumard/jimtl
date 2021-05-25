@@ -9,9 +9,12 @@ environment:
 dependencies:
   intl:
   intl_flavor:
-    path: ../../intl_flavor
 
 dev_dependencies:
   build_runner: ^2.0.3
   intl_flavor_codegen:
     path: ../
+
+dependency_overrides:
+  intl_flavor:
+    path: ../../intl_flavor

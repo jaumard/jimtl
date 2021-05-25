@@ -1,0 +1,30 @@
+{
+  "@@locale": "fr",
+  "@@last_modified": "2021-05-24T14:30:29.647814",
+  "test": "teste",
+  "@test": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "testAndAge": "Teste a {age} ans",
+  "@testAndAge": {
+    "type": "text",
+    "placeholders": {
+      "age": {}
+    }
+  },
+  "testAndGender": "{gender,select, female{Teste est une femme}male{Teste est un homme}other{Teste est inconnue}}",
+  "@testAndGender": {
+    "type": "text",
+    "placeholders": {
+      "gender": {}
+    }
+  },
+  "testAndPlural": "{number,plural, =1{Teste est seul}few{Teste est peu}many{Teste est beaucoup}other{Test est inconnue}}",
+  "@testAndPlural": {
+    "type": "text",
+    "placeholders": {
+      "number": {}
+    }
+  }
+}
