@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:intl_flavor/intl_flavor.dart';
 
-@GenerateArb()
 @GenerateIntl(locales: const {'fr'}, flavors: {'flavor1'})
 class Translations {
 

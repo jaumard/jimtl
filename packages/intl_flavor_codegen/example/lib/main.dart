@@ -9,7 +9,6 @@ main() {
   print(translations.testAndPlural(5));
 }
 
-@GenerateArb()
 @GenerateIntl(locales: const {'fr'})
 class Translations {
   String get test => Intl.message('test', name: 'test');

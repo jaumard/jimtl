@@ -5,10 +5,20 @@ class CustomMessageGeneration extends MessageGeneration {
   final String className;
   final Uri classImport;
   final Set<String> flavors;
+  final Set<String> locales;
   final String defaultFlavor;
+  final String defaultLocale;
   final bool generateFlutterDelegate;
 
-  CustomMessageGeneration(this.className, this.classImport, this.defaultFlavor, this.flavors, {this.generateFlutterDelegate = true });
+  CustomMessageGeneration(
+    this.className,
+    this.classImport,
+    this.defaultFlavor,
+    this.defaultLocale,
+    this.flavors,
+    this.locales, {
+    this.generateFlutterDelegate = true,
+  });
 
   @override
   String generateMainImportFile() {
@@ -18,6 +28,7 @@ class CustomMessageGeneration extends MessageGeneration {
       output.write("import '$classImport';\n");
       output.write("import 'package:flutter/widgets.dart';\n");
       output.write("import 'package:intl/date_symbol_data_local.dart';\n");
+      output.write("import 'package:intl/src/locale/locale_parser.dart';\n");
     }
     for (var locale in allLocales) {
       for (var flavor in flavors) {
@@ -32,9 +43,15 @@ class CustomMessageGeneration extends MessageGeneration {
     output.write("typedef Future<dynamic> LibraryLoader();\n\n");
 
     output.write("final _defaultFlavor = '$defaultFlavor';\n");
-    output.write("final _flavors = [");
+    output.write("final _defaultLocale = '$defaultLocale';\n");
+    output.write("final _flavors = const [");
     for (var flavor in flavors) {
       output.write("'$flavor',");
+    }
+    output.write("];\n");
+    output.write("final _locales = const [");
+    for (var locale in locales) {
+      output.write("'$locale',");
     }
     output.write("];\n\n");
 
@@ -78,7 +95,8 @@ Map _getFlavorMessages(String localeName, String flavor) {
         if (flavor == defaultFlavor) {
           output.write("            return ${libraryName('${flavor}_$locale')}.messages.messages;\n");
         } else {
-          output.write("            return ${libraryName('${defaultFlavor}_$locale')}.messages.messages..addAll(${libraryName('${flavor}_$locale')}.messages.messages);\n");
+          output.write(
+              "            return ${libraryName('${defaultFlavor}_$locale')}.messages.messages..addAll(${libraryName('${flavor}_$locale')}.messages.messages);\n");
         }
       }
     }
@@ -92,10 +110,19 @@ Map _getFlavorMessages(String localeName, String flavor) {
       output.write("""
 class ${className}Delegate extends LocalizationsDelegate<$className> {
 
+  static final List<Locale> supportedLocales = [""");
+
+      for (var locale in allLocales) {
+        output.write("_parseLocale('$locale'), ");
+      }
+
+      output.write("""];
   final String currentFlavor;
   final Locale? overridenLocale;
-
-  const TranslationsDelegate(this.currentFlavor, {this.overridenLocale});
+  
+""");
+      output.write("""
+  TranslationsDelegate(this.currentFlavor, {this.overridenLocale});
 
   @override
   Future<$className> load(Locale locale) => _load(overridenLocale ?? locale, currentFlavor);
@@ -104,7 +131,13 @@ class ${className}Delegate extends LocalizationsDelegate<$className> {
   bool shouldReload(TranslationsDelegate old) => old.currentFlavor != currentFlavor;
   
   static Future<$className> _load(Locale locale, String flavor) {
-    final name = (locale.countryCode == null || locale.countryCode!.isEmpty) ? locale.languageCode : locale.toString();
+    var name = (locale.countryCode == null || locale.countryCode!.isEmpty) ? locale.languageCode : locale.toString();
+    if (!_flavors.contains(flavor)) {
+      flavor = _defaultFlavor;
+    }
+    if (!_locales.contains(name)) {
+      name = _defaultLocale;
+    }
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName, flavor).then((_) async {
       Intl.defaultLocale = localeName;
@@ -114,26 +147,36 @@ class ${className}Delegate extends LocalizationsDelegate<$className> {
   }
   
   @override
-  bool isSupported(Locale locale) => [""");
+  bool isSupported(Locale locale) => supportedLocales.contains(locale);\n}""");
     }
 
-    for(var locale in allLocales) {
-      output.write("'$locale', ");
+    if (generateFlutterDelegate) {
+      output.write("""
+ 
+      
+Locale _parseLocale(String locale) {
+  final parser = LocaleParser(locale);
+  final newLocale = parser.toLocale()!;
+  return Locale.fromSubtags(languageCode: newLocale.languageCode, countryCode: newLocale.countryCode);
+}
+""");
     }
-
-    output.write('].contains(locale.languageCode);\n}');
 
     return output.toString();
   }
 
   /// Constant string used in [generateMainImportFile] as the end of the file.
   @override
-  get closing => """    
+  get closing => """
+
 
 /// User programs should call this before using [localeName] for messages.
 Future<bool> initializeMessages(String localeName, String flavor) async {
   if (!_flavors.contains(flavor)) {
     flavor = _defaultFlavor;
+  }
+  if (!_locales.contains(localeName)) {
+    localeName = _defaultLocale;
   }
   final availableLocale = Intl.verifiedLocale(
     localeName,

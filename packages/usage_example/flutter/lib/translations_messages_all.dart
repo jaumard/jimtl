@@ -18,6 +18,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
 import 'package:intl/src/intl_helpers.dart';
+import 'package:intl/src/locale/locale_parser.dart';
 
 import 'translations_default_messages_en.dart' deferred as messages_default_en;
 import 'translations_default_messages_fr.dart' deferred as messages_default_fr;
@@ -27,7 +28,9 @@ import 'translations_flavor1_messages_fr.dart' deferred as messages_flavor1_fr;
 typedef Future<dynamic> LibraryLoader();
 
 final _defaultFlavor = 'default';
-final _flavors = ['flavor1','default',];
+final _defaultLocale = 'en';
+final _flavors = const ['flavor1','default',];
+final _locales = const ['fr','en',];
 
 Map<String, LibraryLoader> _deferredLibraries = {
   'flavor1_fr': () async {
@@ -80,10 +83,14 @@ Map _getFlavorMessages(String localeName, String flavor) {
           return {};
   }
 }
+
 /// User programs should call this before using [localeName] for messages.
 Future<bool> initializeMessages(String localeName, String flavor) async {
   if (!_flavors.contains(flavor)) {
     flavor = _defaultFlavor;
+  }
+  if (!_locales.contains(localeName)) {
+    localeName = _defaultLocale;
   }
   final availableLocale = Intl.verifiedLocale(
     localeName,
@@ -128,10 +135,11 @@ class MessageLookup extends MessageLookupByLibrary {
 
 class TranslationsDelegate extends LocalizationsDelegate<Translations> {
 
+  static final List<Locale> supportedLocales = [_parseLocale('fr'), _parseLocale('en'), ];
   final String currentFlavor;
   final Locale? overridenLocale;
-
-  const TranslationsDelegate(this.currentFlavor, {this.overridenLocale});
+  
+  TranslationsDelegate(this.currentFlavor, {this.overridenLocale});
 
   @override
   Future<Translations> load(Locale locale) => _load(overridenLocale ?? locale, currentFlavor);
@@ -140,7 +148,13 @@ class TranslationsDelegate extends LocalizationsDelegate<Translations> {
   bool shouldReload(TranslationsDelegate old) => old.currentFlavor != currentFlavor;
   
   static Future<Translations> _load(Locale locale, String flavor) {
-    final name = (locale.countryCode == null || locale.countryCode!.isEmpty) ? locale.languageCode : locale.toString();
+    var name = (locale.countryCode == null || locale.countryCode!.isEmpty) ? locale.languageCode : locale.toString();
+    if (!_flavors.contains(flavor)) {
+      flavor = _defaultFlavor;
+    }
+    if (!_locales.contains(name)) {
+      name = _defaultLocale;
+    }
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName, flavor).then((_) async {
       Intl.defaultLocale = localeName;
@@ -150,5 +164,11 @@ class TranslationsDelegate extends LocalizationsDelegate<Translations> {
   }
   
   @override
-  bool isSupported(Locale locale) => ['fr', 'en', ].contains(locale.languageCode);
+  bool isSupported(Locale locale) => supportedLocales.contains(locale);
+} 
+      
+Locale _parseLocale(String locale) {
+  final parser = LocaleParser(locale);
+  final newLocale = parser.toLocale()!;
+  return Locale.fromSubtags(languageCode: newLocale.languageCode, countryCode: newLocale.countryCode);
 }

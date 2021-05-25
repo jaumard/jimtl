@@ -4,7 +4,7 @@ import 'package:intl_flavor_codegen_example/main_messages_all.dart';
 
 main() async {
   Intl.defaultLocale = 'en';
-  await initializeMessages(Intl.defaultLocale!);
+  await initializeMessages(Intl.defaultLocale!, 'default');
   final translations = Translations();
   print(translations.test);
   print(translations.testAndAge(5));
@@ -12,8 +12,7 @@ main() async {
   print(translations.testAndPlural(5));
 }
 
-@GenerateArb()
-@GenerateIntl(locales: const {'fr'})
+@GenerateIntl(locales: const {'fr'}, generateFlutterDelegate: false)
 class Translations {
   String get test => Intl.message('test', name: 'test');
 

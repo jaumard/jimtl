@@ -6,6 +6,8 @@ class GenerateIntl {
   final bool generateFlutterDelegate;
   final String codegenMode;
   final bool useDeferredLoading;
+  final bool arbSuppressMetaData;
+  final bool arbIncludeSourceText;
 
   const GenerateIntl({
     this.useDeferredLoading = true,
@@ -15,17 +17,7 @@ class GenerateIntl {
     this.locales = const {},
     this.flavors = const {},
     this.generateFlutterDelegate = true,
-  });
-}
-
-class GenerateArb {
-  final String locale;
-  final bool suppressMetaData;
-  final bool includeSourceText;
-
-  const GenerateArb({
-    this.locale = 'en',
-    this.suppressMetaData = false,
-    this.includeSourceText = false,
+    this.arbSuppressMetaData = false,
+    this.arbIncludeSourceText = false,
   });
 }

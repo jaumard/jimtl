@@ -11,41 +11,6 @@ import 'package:intl_translation/generate_localized.dart';
 import 'package:path/path.dart' as path;
 import 'package:source_gen/source_gen.dart';
 
-class ArbBuilder extends GeneratorForAnnotation<GenerateArb> {
-  @override
-  FutureOr<String?> generateForAnnotatedElement(Element element, ConstantReader annotation, BuildStep buildStep) async {
-    // Retrieve the currently matched asset
-    AssetId inputId = buildStep.inputId;
-    // Create a new target `AssetId` based on the current one
-    var copyAssetId = inputId.changeExtension('.arb');
-    var contents = await buildStep.readAsString(inputId);
-
-    // Write out the new asset
-    await buildStep.writeAsString(copyAssetId, _generateARB(annotation, contents, inputId.path));
-  }
-
-  String _generateARB(ConstantReader annotation, String fileContent, String filePath) {
-    final allMessages = {};
-    final extraction = MessageExtraction();
-    extraction.suppressMetaData = annotation.read('suppressMetaData').boolValue;
-    extraction.includeSourceText = annotation.read('includeSourceText').boolValue;
-    final locale = annotation.read('locale').stringValue;
-
-    allMessages["@@locale"] = locale;
-    allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
-
-    var messages = extraction.parseContent(fileContent, filePath, false);
-    messages.forEach(
-      (k, v) => allMessages.addAll(
-        toARB(v, includeSourceText: extraction.includeSourceText, supressMetadata: extraction.suppressMetaData),
-      ),
-    );
-
-    final encoder = JsonEncoder.withIndent("  ");
-    return encoder.convert(allMessages);
-  }
-}
-
 class IntBuilder extends GeneratorForAnnotation<GenerateIntl> {
   final BuilderOptions _options;
   final _jsonDecoder = const JsonCodec();
@@ -63,15 +28,30 @@ class IntBuilder extends GeneratorForAnnotation<GenerateIntl> {
     final codegenMode = annotation.read('codegenMode').stringValue;
     final defaultLocale = annotation.read('defaultLocale').stringValue;
     final defaultFlavor = annotation.read('defaultFlavor').stringValue;
+
+    final extraction = MessageExtraction();
+    extraction.suppressMetaData = annotation.read('arbSuppressMetaData').boolValue;
+    extraction.includeSourceText = annotation.read('arbIncludeSourceText').boolValue;
+
     final locales = Set<String>.from(annotation.read('locales').setValue.map((e) => e.toStringValue()))..add(defaultLocale);
     final flavors = Set<String>.from(annotation.read('flavors').setValue.map((e) => e.toStringValue()))..add(defaultFlavor);
     final name = path.basenameWithoutExtension(inputId.path);
 
-    final extraction = MessageExtraction();
-    final generation = CustomMessageGeneration(element.displayName, inputId.uri, defaultFlavor, flavors, generateFlutterDelegate: generateFlutterDelegate);
+    final generation = CustomMessageGeneration(
+      element.displayName,
+      inputId.uri,
+      defaultFlavor,
+      defaultLocale,
+      flavors,
+      locales,
+      generateFlutterDelegate: generateFlutterDelegate,
+    );
 
     extraction.suppressWarnings = true;
     final allMessages = extraction.parseFile(file, false);
+    final copyAssetId = inputId.changeExtension('.arb');
+    await buildStep.writeAsString(copyAssetId, _generateARB(allMessages, extraction, defaultLocale));
+
     messages = new Map();
     allMessages.forEach((key, value) => messages.putIfAbsent(key, () => []).add(value));
     generation.codegenMode = codegenMode;
@@ -118,6 +98,22 @@ class IntBuilder extends GeneratorForAnnotation<GenerateIntl> {
     generation.generatedFilePrefix = '${name}_';
     final mainImportFile = new File(path.join(targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
     mainImportFile.writeAsStringSync(generation.generateMainImportFile());
+  }
+
+  /// Generate ARB from localization dart Class
+  String _generateARB(Map messages, MessageExtraction extraction, String locale) {
+    final allMessages = {};
+    allMessages["@@locale"] = locale;
+    allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
+
+    messages.forEach(
+          (k, v) => allMessages.addAll(
+        toARB(v, includeSourceText: extraction.includeSourceText, supressMetadata: extraction.suppressMetaData),
+      ),
+    );
+
+    final encoder = JsonEncoder.withIndent("  ");
+    return encoder.convert(allMessages);
   }
 
   /// Create the file of generated code for a particular locale.
