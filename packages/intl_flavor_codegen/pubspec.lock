@@ -9,7 +9,7 @@ packages:
     source: hosted
     version: "21.0.0"
   analyzer:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: analyzer
       url: "https://pub.dartlang.org"
@@ -37,14 +37,14 @@ packages:
     source: hosted
     version: "2.1.0"
   build:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: build
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
   build_config:
-    dependency: "direct dev"
+    dependency: transitive
     description:
       name: build_config
       url: "https://pub.dartlang.org"
@@ -58,7 +58,7 @@ packages:
     source: hosted
     version: "3.0.0"
   build_resolvers:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: build_resolvers
       url: "https://pub.dartlang.org"
@@ -78,13 +78,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "7.0.0"
-  build_test:
-    dependency: "direct dev"
-    description:
-      name: build_test
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.1.0"
   built_collection:
     dependency: transitive
     description:
@@ -149,7 +142,7 @@ packages:
     source: hosted
     version: "3.0.0"
   coverage:
-    dependency: "direct dev"
+    dependency: transitive
     description:
       name: coverage
       url: "https://pub.dartlang.org"
@@ -162,13 +155,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.0.1"
-  csslib:
-    dependency: transitive
-    description:
-      name: csslib
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.17.0"
   dart_style:
     dependency: transitive
     description:
@@ -211,13 +197,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
-  html:
-    dependency: transitive
-    description:
-      name: html
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.15.0"
   http_multi_server:
     dependency: transitive
     description:
@@ -242,9 +221,9 @@ packages:
   intl_flavor:
     dependency: "direct main"
     description:
-      path: "../intl_flavor"
-      relative: true
-    source: path
+      name: intl_flavor
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.0.1"
   intl_generator:
     dependency: "direct main"
@@ -275,7 +254,7 @@ packages:
     source: hosted
     version: "4.0.1"
   logging:
-    dependency: "direct dev"
+    dependency: transitive
     description:
       name: logging
       url: "https://pub.dartlang.org"
@@ -289,7 +268,7 @@ packages:
     source: hosted
     version: "0.12.10"
   meta:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: meta
       url: "https://pub.dartlang.org"
@@ -302,13 +281,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
-  mocktail:
-    dependency: "direct dev"
-    description:
-      name: mocktail
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.2"
   node_preamble:
     dependency: transitive
     description:

@@ -35,9 +35,31 @@ class Translations {
   String get increment => Intl.message('Increment', name: 'increment');
 
   String counterPushed(int number) => Intl.message('You have pushed the button $number times: ', args: [number], name: 'counterPushed');
-
 }
 ```
 
+### Flavors
+
+This package can help you deal with flavor, list the flavors on `GenerateIntl` annotation and provide an ARB file for each locales you support
+
+Flavor ARB doesn't have to contain all the sentences, if a sentence is not present in the flavor ARB, the default sentence from the locale will be used.
+
+### Configuration
+
+You have the possibility to customize `GenerateIntl` annotation with the following fields:
+
+- defaultLocale: locale your working with, default to 'en'
+- defaultFlavor: default flavor of your project, default to 'default'
+- locales: List of supported locales of your project
+- flavors: List of flavors of your project
+- generateFlutterDelegate: If your using pure dart project, you'll need to disable flutter related code, default to true
+- codegenMode: mode to pass to underlaying intl_generator, default to 'release'
+- useDeferredLoading: either to use deferred loading for localization files, default to true
+- arbSuppressMetaData: suppress meta data when generating the ARB file, default to false
+- arbIncludeSourceText: whether to include source_text in messages, default to false
 
 ## Localization from ARB
+
+No dart on your side, everything is generated from your ARB files.
+
+Comming soon it's on my todo list
