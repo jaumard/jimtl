@@ -221,9 +221,9 @@ packages:
   intl_flavors:
     dependency: "direct main"
     description:
-      path: "../intl_flavors"
-      relative: true
-    source: path
+      name: intl_flavors
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.0.1"
   intl_generator:
     dependency: "direct main"
