@@ -1,4 +1,4 @@
-name: intl_flavor_codegen_example
+name: intl_flavors_codegen_example
 description: Intl utility to manage multi ARB files to manage flavors in your app
 version: 0.0.1
 homepage:
@@ -8,10 +8,10 @@ environment:
 
 dependencies:
   intl:
-  intl_flavor:
-    path: ../../intl_flavor
+  intl_flavors:
+    path: ../../intl_flavors
 
 dev_dependencies:
   build_runner: ^2.0.3
-  intl_flavor_codegen:
-    path: ../../intl_flavor_codegen
+  intl_flavors_codegen:
+    path: ../../intl_flavors_codegen

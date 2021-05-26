@@ -1,7 +1,7 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
-import 'package:intl_flavor/intl_flavor.dart';
+import 'package:intl_flavors/intl_flavors.dart';
 
 @GenerateIntl(locales: const {'fr'}, flavors: {'flavor1'})
 class Translations {

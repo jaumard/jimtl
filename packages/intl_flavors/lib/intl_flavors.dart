@@ -1,3 +1,3 @@
-library intl_flavor;
+library intl_flavors;
 
 export 'src/annotations.dart';

@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
-import 'package:intl_flavor/intl_flavor.dart';
-import 'package:intl_flavor_codegen_example/main_messages_all.dart';
+import 'package:intl_flavors/intl_flavors.dart';
+import 'package:intl_flavors_codegen_example/main_messages_all.dart';
 
 main() async {
   Intl.defaultLocale = 'en';

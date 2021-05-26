@@ -4,8 +4,8 @@ import 'dart:io';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
-import 'package:intl_flavor/intl_flavor.dart';
-import 'package:intl_flavor_codegen/src/generate_localized.dart';
+import 'package:intl_flavors/intl_flavors.dart';
+import 'package:intl_flavors_codegen/src/generate_localized.dart';
 import 'package:intl_generator/extract_messages.dart';
 import 'package:intl_generator/generate_localized.dart';
 import 'package:path/path.dart' as path;
@@ -150,13 +150,6 @@ class IntBuilder extends GeneratorForAnnotation<GenerateIntl> {
     }
     MainMessage();
     return BasicTranslatedMessage(id, parsed);
-  }
-
-  @override
-  Map<String, List<String>> get buildExtensions {
-    return {
-      '.arb': ['messages.*.dart'],
-    };
   }
 }
 

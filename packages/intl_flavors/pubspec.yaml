@@ -1,4 +1,4 @@
-name: intl_flavor
+name: intl_flavors
 description: Intl utility to manage multi ARB files to manage flavors in your app
 version: 0.0.1
 homepage: https://github.com/jaumard/intl_flavors

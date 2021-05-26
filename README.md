@@ -3,16 +3,16 @@ Intl utilities to easily manage localization in Dart and Flutter
 
 ## Setup
 
-Install last version of intl_flavor and intl_flavor_codegen.
+Install last version of intl_flavors and intl_flavors_codegen.
 
 ```yaml
 dependencies:
   intl:
-  intl_flavor:
+  intl_flavors:
 
 dev_dependencies:
   build_runner: ^2.0.3
-  intl_flavor_codegen:
+  intl_flavors_codegen:
 ```
 
 You then have two options, use Dart code to generate your ARB file, or manage your ARB file manually.
