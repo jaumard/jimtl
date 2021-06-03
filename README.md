@@ -48,6 +48,9 @@ Flavor ARB doesn't have to contain all the sentences, if a sentence is not prese
 
 You have the possibility to customize `GenerateIntl` annotation with the following fields:
 
+- baseFileName: specify base file name for generated files, default to the name of the annotated class
+- arbDir: dir to generate the ARB file, relative to the current file, default to '.'
+- genDir: dir to generate the dart files, relative to the current file, default to '.'
 - defaultLocale: locale your working with, default to 'en'
 - defaultFlavor: default flavor of your project, default to 'default'
 - locales: List of supported locales of your project
@@ -56,13 +59,14 @@ You have the possibility to customize `GenerateIntl` annotation with the followi
 - codegenMode: mode to pass to underlaying intl_generator, default to 'release'
 - useDeferredLoading: either to use deferred loading for localization files, default to true
 - arbSuppressMetaData: suppress meta data when generating the ARB file, default to false
+- arbSuppressLastModified: suppress last modified when generating the ARB file, default to false
 - arbIncludeSourceText: whether to include source_text in messages, default to false
 
 ## Localization from ARB
 
 No dart on your side, everything is generated from your ARB files.
 
-Comming soon it's on my todo list
+Comming soon, contribution are welcome
 
 ## Examples:
 
