@@ -11,11 +11,25 @@ import 'package:intl_generator/generate_localized.dart';
 import 'package:path/path.dart' as path;
 import 'package:source_gen/source_gen.dart';
 
+class IntBuilder2 extends Builder {
+  @override
+  FutureOr<void> build(BuildStep buildStep) {
+    // TODO: implement build
+    throw UnimplementedError();
+  }
+
+  @override
+  // TODO: implement buildExtensions
+  Map<String, List<String>> get buildExtensions => throw UnimplementedError();
+}
+
 class IntBuilder extends GeneratorForAnnotation<GenerateIntl> {
   final BuilderOptions _options;
   final _jsonDecoder = const JsonCodec();
 
-  IntBuilder(this._options);
+  IntBuilder(this._options) {
+    print('IntBuilder created');
+  }
 
   @override
   FutureOr<String?> generateForAnnotatedElement(Element element, ConstantReader annotation, BuildStep buildStep) async {
@@ -23,19 +37,23 @@ class IntBuilder extends GeneratorForAnnotation<GenerateIntl> {
     AssetId inputId = buildStep.inputId;
 
     final file = File(inputId.path);
-    final targetDir = file.parent.path;
+    final baseFileName = annotation.read('baseFileName').isNull ? null : annotation.read('baseFileName').stringValue;
     final generateFlutterDelegate = annotation.read('generateFlutterDelegate').boolValue;
     final codegenMode = annotation.read('codegenMode').stringValue;
     final defaultLocale = annotation.read('defaultLocale').stringValue;
     final defaultFlavor = annotation.read('defaultFlavor').stringValue;
+    final arbDir = annotation.read('arbDir').stringValue;
+    final genDir = annotation.read('genDir').stringValue;
+    final targetDir = path.join(file.parent.path, genDir);
 
     final extraction = MessageExtraction();
     extraction.suppressMetaData = annotation.read('arbSuppressMetaData').boolValue;
     extraction.includeSourceText = annotation.read('arbIncludeSourceText').boolValue;
+    extraction.suppressLastModified = annotation.read('arbSuppressLastModified').boolValue;
 
     final locales = Set<String>.from(annotation.read('locales').setValue.map((e) => e.toStringValue()))..add(defaultLocale);
     final flavors = Set<String>.from(annotation.read('flavors').setValue.map((e) => e.toStringValue()))..add(defaultFlavor);
-    final name = path.basenameWithoutExtension(inputId.path);
+    final name = baseFileName ?? path.basenameWithoutExtension(inputId.path);
 
     final generation = CustomMessageGeneration(
       element.displayName,
@@ -49,8 +67,19 @@ class IntBuilder extends GeneratorForAnnotation<GenerateIntl> {
 
     extraction.suppressWarnings = true;
     final allMessages = extraction.parseFile(file, false);
-    final copyAssetId = inputId.changeExtension('.arb');
-    await buildStep.writeAsString(copyAssetId, _generateARB(allMessages, extraction, defaultLocale));
+    final extension = '_${defaultLocale}.arb';
+    var copyAssetId = inputId.changeExtension(extension);
+    if (baseFileName != null) {
+      final assetPath = path.join(path.dirname(copyAssetId.path), '$name$extension');
+      copyAssetId = AssetId(copyAssetId.package, assetPath);
+    }
+    if (arbDir != '.') {
+      final assetPath = path.join(path.dirname(copyAssetId.path), arbDir, '$name$extension');
+      copyAssetId = AssetId(copyAssetId.package, assetPath);
+    }
+
+    //FIXME not supported by builder await buildStep.writeAsString(copyAssetId, _generateARB(allMessages, extraction, defaultLocale));
+    File(copyAssetId.path).writeAsStringSync(_generateARB(allMessages, extraction, defaultLocale));
 
     messages = new Map();
     allMessages.forEach((key, value) => messages.putIfAbsent(key, () => []).add(value));
@@ -62,20 +91,20 @@ class IntBuilder extends GeneratorForAnnotation<GenerateIntl> {
 
       locales.forEach((localeItem) {
         generation.allLocales.add(localeItem);
-        var arbFile = File(path.join(file.parent.path, '${name}_${flavorItem}_$localeItem.arb'));
+        var arbFile = File(path.join(file.parent.path, arbDir, '${name}_${flavorItem}_$localeItem.arb'));
         if (flavorItem == defaultFlavor) {
           if (!arbFile.existsSync()) {
-            arbFile = File(path.join(file.parent.path, '${name}_$localeItem.arb'));
+            arbFile = File(path.join(file.parent.path, arbDir, '${name}_$localeItem.arb'));
           }
           if (localeItem == defaultLocale) {
             if (!arbFile.existsSync()) {
-              arbFile = File(path.join(file.parent.path, '$name.arb'));
+              arbFile = File(path.join(file.parent.path, arbDir, '$name.arb'));
             }
           }
         }
         if (localeItem == defaultLocale) {
           if (!arbFile.existsSync()) {
-            arbFile = File(path.join(file.parent.path, '${name}_${flavorItem}.arb'));
+            arbFile = File(path.join(file.parent.path, arbDir, '${name}_${flavorItem}.arb'));
           }
         }
 
@@ -90,24 +119,28 @@ class IntBuilder extends GeneratorForAnnotation<GenerateIntl> {
       });
 
       generation.generatedFilePrefix = '${name}_${flavorItem}_';
-      messagesByLocale.forEach((key, value) {
-        _generateLocaleFile(key, value, targetDir, generation);
-      });
+      for (final entry in messagesByLocale.entries) {
+        _generateLocaleFile(entry.key, entry.value, targetDir, generation, buildStep, inputId);
+      }
     });
 
     generation.generatedFilePrefix = '${name}_';
-    final mainImportFile = new File(path.join(targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
-    mainImportFile.writeAsStringSync(generation.generateMainImportFile());
+    final assetPath = path.join(targetDir, '${generation.generatedFilePrefix}messages_all.dart');
+    final mainImportAssetId = AssetId(inputId.package, assetPath);
+    //FIXME not supported by builder await buildStep.writeAsString(mainImportAssetId, generation.generateMainImportFile());
+    File(mainImportAssetId.path).writeAsStringSync(generation.generateMainImportFile());
   }
 
   /// Generate ARB from localization dart Class
   String _generateARB(Map messages, MessageExtraction extraction, String locale) {
     final allMessages = {};
     allMessages["@@locale"] = locale;
-    allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
+    if (!extraction.suppressLastModified) {
+      allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
+    }
 
     messages.forEach(
-          (k, v) => allMessages.addAll(
+      (k, v) => allMessages.addAll(
         toARB(v, includeSourceText: extraction.includeSourceText, supressMetadata: extraction.suppressMetaData),
       ),
     );
@@ -124,7 +157,14 @@ class IntBuilder extends GeneratorForAnnotation<GenerateIntl> {
   /// locale. If that attribute is missing, we try to get the locale from the
   /// last section of the file name. Each ARB file produces a Map of message
   /// translations, and there can be multiple such maps in [localeData].
-  void _generateLocaleFile(String locale, List<Map> localeData, String targetDir, MessageGeneration generation) {
+  void _generateLocaleFile(
+    String locale,
+    List<Map> localeData,
+    String targetDir,
+    MessageGeneration generation,
+    BuildStep buildStep,
+    AssetId sourceAssetId,
+  ) {
     List<TranslatedMessage> translations = [];
     for (var jsonTranslations in localeData) {
       jsonTranslations.forEach((id, messageData) {
@@ -134,7 +174,11 @@ class IntBuilder extends GeneratorForAnnotation<GenerateIntl> {
         }
       });
     }
-    generation.generateIndividualMessageFile(locale, translations, targetDir);
+
+    final assetPath = path.join(targetDir, '${generation.generatedFilePrefix}messages_$locale.dart');
+    final assetId = AssetId(sourceAssetId.package, assetPath);
+    //FIXME not supported by builder await buildStep.writeAsString(assetId, generation.contentForLocale(locale, translations));
+    File(assetPath).writeAsStringSync(generation.contentForLocale(locale, translations));
   }
 
   /// Regenerate the original IntlMessage objects from the given [data]. For

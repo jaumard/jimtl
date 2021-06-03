@@ -6,6 +6,6 @@ import 'package:source_gen/source_gen.dart';
 
 Builder intlBuilder(BuilderOptions options) => LibraryBuilder(
       IntBuilder(options),
-      generatedExtension: '.lang.en.dart',
+      generatedExtension: '.messages.all.dart',
       additionalOutputExtensions: ['.arb'],
     );

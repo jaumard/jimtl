@@ -122,13 +122,13 @@ class ${className}Delegate extends LocalizationsDelegate<$className> {
   
 """);
       output.write("""
-  TranslationsDelegate(this.currentFlavor, {this.overridenLocale});
+  ${className}Delegate(this.currentFlavor, {this.overridenLocale});
 
   @override
   Future<$className> load(Locale locale) => _load(overridenLocale ?? locale, currentFlavor);
 
   @override
-  bool shouldReload(TranslationsDelegate old) => old.currentFlavor != currentFlavor;
+  bool shouldReload(${className}Delegate old) => old.currentFlavor != currentFlavor;
   
   static Future<$className> _load(Locale locale, String flavor) {
     var name = (locale.countryCode == null || locale.countryCode!.isEmpty) ? locale.languageCode : locale.toString();

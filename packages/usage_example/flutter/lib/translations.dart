@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:intl_flavors/intl_flavors.dart';
 
-@GenerateIntl(locales: const {'fr'}, flavors: {'flavor1'})
+@GenerateIntl(locales: const {'fr'}, flavors: {'flavor1'}, arbSuppressLastModified: true)
 class Translations {
 
   static Translations of(BuildContext context) => Localizations.of<Translations>(context, Translations)!;

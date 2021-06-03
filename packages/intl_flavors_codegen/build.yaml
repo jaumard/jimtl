@@ -1,15 +1,8 @@
-targets:
-  intl_flavors_codegen:intl_flavors_codegen:
-    builders:
-      intl_flavors_codegen|intlBuilder:
-        enabled: true
-        generate_for:
-          - lib/*
-
 builders:
   intlBuilder:
     import: 'package:intl_flavors_codegen/intl_flavors_codegen.dart'
     builder_factories: ['intlBuilder']
-    build_extensions: { '.arb': ['messages.en.dart'], '.dart': [ '.arb' ] }
+    build_extensions: { '.dart': [ '.arb' ] }
     build_to: source
-    auto_apply: root_package
+    auto_apply: dependents
+    applies_builders: [ "source_gen|combining_builder" ]

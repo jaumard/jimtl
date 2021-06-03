@@ -1,6 +1,5 @@
 {
   "@@locale": "fr",
-  "@@last_modified": "2021-05-24T14:30:29.647814",
   "test": "teste",
   "@test": {
     "type": "text",
