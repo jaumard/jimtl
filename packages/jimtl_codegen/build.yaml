@@ -1,0 +1,15 @@
+builders:
+  intlBuilder:
+    import: 'package:jimtl_codegen/jimtl_codegen.dart'
+    builder_factories: [ 'intlBuilder' ]
+    build_extensions: { '.dart': [ '.lang.dart' ] }
+    build_to: source
+    auto_apply: dependents
+    applies_builders: [ "source_gen|combining_builder" ]
+  arbBuilder:
+    import: 'package:jimtl_codegen/jimtl_codegen.dart'
+    builder_factories: [ 'arbBuilder' ]
+    build_extensions: { '.dart': [ '.arb' ] }
+    build_to: source
+    auto_apply: dependents
+    applies_builders: [ "source_gen|combining_builder" ]

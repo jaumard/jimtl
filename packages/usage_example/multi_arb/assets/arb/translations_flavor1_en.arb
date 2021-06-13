@@ -1,0 +1,14 @@
+{
+  "@@locale": "en",
+  "@@last_modified": "2021-05-24T17:13:05.464080",
+  "counter": "Counter flavor1",
+  "@counter": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "increment": "Increment flavor1",
+  "@increment": {
+    "type": "text",
+    "placeholders": {}
+  }
+}

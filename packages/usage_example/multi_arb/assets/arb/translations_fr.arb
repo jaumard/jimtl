@@ -1,0 +1,5 @@
+{
+  "counter": "Compteur",
+  "counterPushed": "Vous avez appuyé sur le bouton {number} fois : ",
+  "increment": "Incrémenter"
+}

@@ -85,6 +85,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "8.0.6"
+  characters:
+    dependency: transitive
+    description:
+      name: characters
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.0"
   charcode:
     dependency: transitive
     description:
@@ -162,6 +169,18 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
+  flutter:
+    dependency: "direct main"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
+  flutter_jimtl:
+    dependency: "direct main"
+    description:
+      path: ".."
+      relative: true
+    source: path
+    version: "0.0.1"
   frontend_server_client:
     dependency: transitive
     description:
@@ -219,19 +238,19 @@ packages:
     source: hosted
     version: "1.0.0"
   jimtl:
-    dependency: "direct main"
+    dependency: transitive
     description:
-      path: "../../jimtl"
-      relative: true
-    source: path
-    version: "0.0.2"
+      name: jimtl
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.1"
   jimtl_codegen:
     dependency: "direct dev"
     description:
       path: "../../jimtl_codegen"
       relative: true
     source: path
-    version: "0.0.2"
+    version: "0.0.1"
   js:
     dependency: transitive
     description:
@@ -337,6 +356,11 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.1"
+  sky_engine:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.99"
   source_gen:
     dependency: transitive
     description:
@@ -400,6 +424,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.3.0"
+  vector_math:
+    dependency: transitive
+    description:
+      name: vector_math
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
   watcher:
     dependency: transitive
     description:

@@ -1,0 +1,25 @@
+{
+  "@@locale": "en",
+  "counter": "Counter",
+  "@counter": {
+    "type": "text",
+    "placeholders_order": [],
+    "placeholders": {}
+  },
+  "increment": "Increment",
+  "@increment": {
+    "type": "text",
+    "placeholders_order": [],
+    "placeholders": {}
+  },
+  "counterPushed": "You have pushed the button {number} times: ",
+  "@counterPushed": {
+    "type": "text",
+    "placeholders_order": [
+      "number"
+    ],
+    "placeholders": {
+      "number": {}
+    }
+  }
+}

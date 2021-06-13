@@ -1,7 +1,7 @@
-import 'package:example/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_jimtl/flutter_jimtl.dart';
+import 'package:jimtl_codegen_example/translations.dart';
 
 void main() async {
   runApp(MyApp());

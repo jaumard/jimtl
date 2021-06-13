@@ -1,0 +1,16 @@
+name: jimtl_localazy
+description: Localazy support for jimtl remote translations
+version: 1.0.0
+homepage: https://github.com/jaumard/jimtl
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  collection: ^1.15.0
+  http: ^0.13.3
+  jimtl: #">=1.0.0 <2.0.0"
+    path: ../jimtl
+
+dev_dependencies:
+  test: ^1.16.8

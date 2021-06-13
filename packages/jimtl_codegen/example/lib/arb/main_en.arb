@@ -1,0 +1,97 @@
+{
+  "@@locale": "en",
+  "test": "test message",
+  "@test": {
+    "type": "text",
+    "placeholders_order": [],
+    "placeholders": {}
+  },
+  "testAndAge": "Test have {age} years old",
+  "@testAndAge": {
+    "type": "text",
+    "placeholders_order": [
+      "age"
+    ],
+    "placeholders": {
+      "age": {}
+    }
+  },
+  "complex": "{name2} love {name}",
+  "@complex": {
+    "type": "text",
+    "placeholders_order": [
+      "name",
+      "name2"
+    ],
+    "placeholders": {
+      "name": {},
+      "name2": {}
+    }
+  },
+  "nameAndAge": "{name} have {age} years old",
+  "@nameAndAge": {
+    "type": "text",
+    "placeholders_order": [
+      "name",
+      "age"
+    ],
+    "placeholders": {
+      "name": {},
+      "age": {}
+    }
+  },
+  "nameDouble": "My name is {name} and {name} is nice",
+  "@nameDouble": {
+    "type": "text",
+    "placeholders_order": [
+      "name"
+    ],
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "testAndGender": "{gender,select, female{Test is female}male{Test is male}other{Test is unknown}}",
+  "@testAndGender": {
+    "type": "text",
+    "placeholders_order": [
+      "gender"
+    ],
+    "placeholders": {
+      "gender": {}
+    }
+  },
+  "genderComplex": "{gender,select, female{Test is female ({data})}male{Test is male ({data})}other{Test is unknown ({data})}}",
+  "@genderComplex": {
+    "type": "text",
+    "placeholders_order": [
+      "gender",
+      "data"
+    ],
+    "placeholders": {
+      "gender": {},
+      "data": {}
+    }
+  },
+  "testAndPlural": "{number,plural, =1{Test is alone}=2{Test is two}few{Test is few}many{Test is a lot}other{Test is other}}",
+  "@testAndPlural": {
+    "type": "text",
+    "placeholders_order": [
+      "number"
+    ],
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "pluralComplex": "{number,plural, =1{{name} is alone}=2{{name} is two}few{{name} is few}many{{name} is a lot ({number})}other{{name} is other}}",
+  "@pluralComplex": {
+    "type": "text",
+    "placeholders_order": [
+      "name",
+      "number"
+    ],
+    "placeholders": {
+      "name": {},
+      "number": {}
+    }
+  }
+}

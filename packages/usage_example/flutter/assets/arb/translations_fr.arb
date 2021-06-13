@@ -1,0 +1,21 @@
+{
+  "@@locale": "fr",
+  "@@last_modified": "2021-05-24T17:02:17.502348",
+  "counter": "Compteur",
+  "@counter": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "increment": "Incrémenter",
+  "@increment": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "counterPushed": "Vous avez appuyé {number} fois: ",
+  "@counterPushed": {
+    "type": "text",
+    "placeholders": {
+      "number": {}
+    }
+  }
+}

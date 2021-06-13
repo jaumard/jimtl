@@ -1,0 +1,9 @@
+{
+  "@@locale": "en",
+  "error1": "Error flavor 1",
+  "@error1": {
+    "type": "text",
+    "placeholders_order": [],
+    "placeholders": {}
+  }
+}

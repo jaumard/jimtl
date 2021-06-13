@@ -1,0 +1,20 @@
+{
+  "@@locale": "en",
+  "counter": "Counter from remote",
+  "@counter": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "increment": "Increment",
+  "@increment": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "counterPushed": "You have pushed the button {number} times: ",
+  "@counterPushed": {
+    "type": "text",
+    "placeholders": {
+      "number": {}
+    }
+  }
+}
