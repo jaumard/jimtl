@@ -9,12 +9,11 @@ environment:
 dependencies:
   intl:
   jimtl:
-    path: ../../jimtl
 
 dev_dependencies:
   build_runner: ^2.0.3
   jimtl_codegen:
-    path: ../../jimtl_codegen
+    path: ../
 
 dependency_overrides:
   jimtl:

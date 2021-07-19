@@ -228,7 +228,7 @@ packages:
   jimtl_codegen:
     dependency: "direct dev"
     description:
-      path: "../../jimtl_codegen"
+      path: ".."
       relative: true
     source: path
     version: "0.0.2"

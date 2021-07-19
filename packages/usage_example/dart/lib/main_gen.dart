@@ -1,21 +1,10 @@
-import 'dart:io';
-
 import 'package:intl/intl.dart';
 import 'package:jimtl/jimtl.dart';
+import 'package:jimtl_codegen_example/gen/main_gen_messages_all.dart';
 
-/// This example show you how to generate ARB file and use it on your dart code
+/// This example show you how to generate dart code from ARB if you prefer
 main() async {
-  final delegate = IntlDelegate(
-    defaultLocale: 'en',
-    dataLoader: (String locale, String flavor) async {
-      if (flavor == IntlDelegate.defaultFlavorName) {
-        return await File('./lib/arb/main_$locale.arb').readAsString();
-      }
-      return await File('./lib/arb/main_${flavor}_$locale.arb').readAsString();
-    },
-  );
-  await delegate.load('fr');
-
+  await initializeMessages(Intl.defaultLocale!, IntlDelegate.defaultFlavorName);
   final translations = Translations();
   print(translations.test);
   print(translations.complex('test', 'test2'));
@@ -27,9 +16,11 @@ main() async {
   print(translations.pluralComplex('test', 2));
 }
 
-@GenerateArb(
-  dir: 'lib/arb',
-  suppressLastModified: true,
+@GenerateIntl(
+  locales: const {'fr'},
+  arbSuppressLastModified: true,
+  arbDir: 'arb',
+  genDir: 'gen',
 )
 class Translations {
   String get test => Intl.message('test message', name: 'test');

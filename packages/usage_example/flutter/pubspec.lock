@@ -195,6 +195,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_jimtl:
+    dependency: "direct main"
+    description:
+      path: "../../flutter_jimtl"
+      relative: true
+    source: path
+    version: "0.0.2"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -242,27 +249,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.17.0"
-  intl_flavors:
-    dependency: "direct main"
-    description:
-      path: "../../intl_flavors"
-      relative: true
-    source: path
-    version: "0.0.1"
-  intl_flavors_codegen:
-    dependency: "direct dev"
-    description:
-      path: "../../intl_flavors_codegen"
-      relative: true
-    source: path
-    version: "0.0.1"
   intl_generator:
     dependency: transitive
     description:
       name: intl_generator
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.0+0"
+    version: "0.2.0+0"
   io:
     dependency: transitive
     description:
@@ -270,6 +263,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
+  jimtl:
+    dependency: transitive
+    description:
+      path: "../../jimtl"
+      relative: true
+    source: path
+    version: "0.0.2"
+  jimtl_codegen:
+    dependency: "direct dev"
+    description:
+      path: "../../jimtl_codegen"
+      relative: true
+    source: path
+    version: "0.0.2"
   js:
     dependency: transitive
     description:

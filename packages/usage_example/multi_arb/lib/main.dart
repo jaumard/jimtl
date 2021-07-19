@@ -1,3 +1,4 @@
+import 'package:example/errors.dart';
 import 'package:example/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -26,9 +27,29 @@ class _MyAppState extends State<MyApp> {
       supportedLocales: locales,
       localizationsDelegates: [
         DefaultMaterialLocalizations.delegate,
+        TranslationsDelegate<TranslationsErrors>(
+          defaultLocale: locales.first,
+          currentFlavor: 'flavor1',
+          onTranslationsUpdated: () {
+            print('TX updated, need rebuild');
+            setState(() {});
+          },
+          supportedLocales: locales,
+          dataLoader: (locale, flavor) async {
+            print('local load $locale and $flavor for errors');
+            if (flavor == IntlDelegate.defaultFlavorName) {
+              return await rootBundle.loadString('assets/arb/errors_$locale.arb');
+            }
+            return await rootBundle.loadString('assets/arb/errors_${flavor}_$locale.arb');
+          },
+          defaultFlavor: IntlDelegate.defaultFlavorName,
+          overrideCurrentLocale: locales.last,
+          translationsBuilder: () => TranslationsErrors(),
+        ),
         TranslationsDelegate<Translations>(
           defaultLocale: locales.first,
           currentFlavor: 'flavor1',
+          overrideCurrentLocale: locales.last,
           onTranslationsUpdated: () {
             print('TX updated, need rebuild');
             setState(() {});
@@ -69,6 +90,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
   void _incrementCounter() {
+    print(TranslationsErrors.of(context).error1);
+    print(TranslationsErrors.of(context).error2);
     setState(() {
       _counter++;
     });

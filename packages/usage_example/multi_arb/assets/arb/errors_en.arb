@@ -1,0 +1,15 @@
+{
+  "@@locale": "en",
+  "error1": "Error 1",
+  "@error1": {
+    "type": "text",
+    "placeholders_order": [],
+    "placeholders": {}
+  },
+  "error2": "Error 2",
+  "@error2": {
+    "type": "text",
+    "placeholders_order": [],
+    "placeholders": {}
+  }
+}
