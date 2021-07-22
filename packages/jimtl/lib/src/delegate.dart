@@ -85,9 +85,10 @@ class CustomLookup extends MessageLookupByLibrary {
         final defaultMessages = _messages[defaultFlavorName]![defaultLocaleName]!;
         final defaultSentence = defaultMessages[name];
         if (defaultSentence == null) {
-          print('no message found for $name');
+          print('no message found for $name, default to $messageText');
+          return messageText;
         }
-        return _getString(knownLocale, name.toLowerCase(), defaultSentence!, args ?? []);
+        return _getString(knownLocale, name.toLowerCase(), defaultSentence, args ?? []);
       }
       return _getString(knownLocale, name.toLowerCase(), defaultSentence, args ?? []);
     }
