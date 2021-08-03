@@ -1,6 +1,6 @@
 name: jimtl
 description: Intl utility to use ARB files without code generation, deal with ARB flavors and have ARB OTA updates in your app
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/jaumard/jimtl
 
 environment:

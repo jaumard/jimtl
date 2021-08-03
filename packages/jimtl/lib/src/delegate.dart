@@ -21,13 +21,13 @@ String _getString(String locale, String id, Message message, List<Object> args) 
     return s.toString();
   }
   if (message is VariableSubstitution) {
-    final index = metaData[id]!.indexOf(message.variableName.toLowerCase());
+    final index = metaData[id]!.indexWhere((key) => key.toLowerCase() == message.variableName.toLowerCase());
     if (index == -1 && args.length > 1) {
       throw StateError('No meta data "placeholders_order" found for $id, be sure you generate your ARB with intl_generator or intl_flavors');
     }
     return index == -1 ? args.first.toString() : args[index].toString();
   } else if (message is Gender) {
-    final index = metaData[id]!.indexOf(message.mainArgument!.toLowerCase());
+    final index = metaData[id]!.indexWhere((key) => key.toLowerCase() == message.mainArgument!.toLowerCase());
     return Intl.genderLogic(
       args[index].toString(),
       locale: locale,
@@ -36,7 +36,7 @@ String _getString(String locale, String id, Message message, List<Object> args) 
       female: _getString(locale, id, message.female ?? message.other!, args),
     );
   } else if (message is Plural) {
-    final index = metaData[id]!.indexOf(message.mainArgument!.toLowerCase());
+    final index = metaData[id]!.indexWhere((key) => key.toLowerCase() == message.mainArgument!.toLowerCase());
     return Intl.pluralLogic(
       args[index] as num,
       locale: locale,
