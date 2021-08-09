@@ -7,10 +7,11 @@ environment:
   sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
+  path: ^1.8.0
   collection: ^1.15.0
   http: ^0.13.3
-  jimtl: #">=1.0.0 <2.0.0"
-    path: ../jimtl
+  jimtl: ">=0.0.3 <1.0.0"
+  #path: ../jimtl
 
 dev_dependencies:
   test: ^1.16.8

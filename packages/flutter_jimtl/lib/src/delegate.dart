@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_jimtl/flutter_jimtl.dart';
-import 'package:jimtl/jimtl.dart';
 import 'package:intl/src/locale/locale_parser.dart';
+import 'package:jimtl/jimtl.dart';
 
 /// use to update ARB data for give [locale] and [flavor]
 /// It returns some content to save in memory
@@ -18,14 +18,26 @@ Locale _parseLocale(String locale) {
   return Locale.fromSubtags(languageCode: newLocale.languageCode, countryCode: newLocale.countryCode, scriptCode: newLocale.scriptCode);
 }
 
+/// LocalizationsDelegate that allow you to load ARB files on the fly
 class TranslationsDelegate<T> extends LocalizationsDelegate<T> {
+  /// Current flavor of your app
   final String currentFlavor;
-  final Locale? overrideCurrentLocale;
-  final IntlDelegate _delegate;
-  final List<Locale> supportedLocales;
-  final T Function() translationsBuilder;
-  final VoidCallback? onTranslationsUpdated;
 
+  /// Locale to use instead of the one given by the system
+  final Locale? overrideCurrentLocale;
+
+  /// Supported locales of your app
+  final List<Locale> supportedLocales;
+
+  /// Callback to create your Localization file, it will be called when needed by Flutter
+  final T Function() translationsBuilder;
+
+  /// Callback that will be called when translations are updated, it means you need to rebuild your app in order to see those
+  final VoidCallback? onTranslationsUpdated;
+  final IntlDelegate _delegate;
+
+  /// Construct an object that will manage the localized strings of your app
+  /// You're in change of instantiate your localization class file with [translationsBuilder]
   TranslationsDelegate({
     required Locale defaultLocale,
     this.currentFlavor = IntlDelegate.defaultFlavorName,

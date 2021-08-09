@@ -22,6 +22,9 @@ environment:
 
 dependencies:
   intl:
+  jimtl_localazy:
+    path: ../../jimtl_localazy
+  path_provider:
   flutter_jimtl:
     path: ../../flutter_jimtl
   flutter:

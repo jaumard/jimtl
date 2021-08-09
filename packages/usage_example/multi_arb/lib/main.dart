@@ -3,8 +3,21 @@ import 'package:example/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_jimtl/flutter_jimtl.dart';
+import 'package:jimtl_localazy/jimtl_localazy.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+
+late LocalazyCdnManager localazy;
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  localazy = LocalazyCdnManager(
+    cdnId: '_a860213072293210453319c546c5',
+    getFileName: (String locale, String flavor) {
+      return 'translations.arb';
+    },
+    cacheFolder: path.join((await getTemporaryDirectory()).path, 'translations'),
+  );
   runApp(MyApp());
 }
 
@@ -64,11 +77,12 @@ class _MyAppState extends State<MyApp> {
           },
           updateDataLoader: (locale, flavor) async {
             print('Remote load $locale and $flavor');
-            if (locale == 'en' && flavor == 'flavor1') {
-              await Future.delayed(Duration(seconds: 10)); //simulate some slow network response
-              return await rootBundle.loadString('assets/arb/translations_remote_$locale.arb');
+
+            try {
+              return localazy.download(locale.toString(), flavor); // no update
+            } catch (ex) {
+              return null;
             }
-            return null; // no update
           },
           defaultFlavor: IntlDelegate.defaultFlavorName,
           translationsBuilder: () => Translations(),

@@ -112,15 +112,88 @@ typedef IntlDataLoader = Future<String> Function(String locale, String flavor);
 /// If it returns some content, it will update accordingly
 typedef IntlUpdateDataLoader = Future<String?> Function(String locale, String flavor);
 
+/// This is a message lookup mechanism that delegates to one of a collection
+/// of individual [MessageLookupByLibrary] instances.
+class CustomCompositeMessageLookup implements MessageLookup {
+  final bool cacheLocale;
+
+  /// A map from locale names to the corresponding lookups.
+  final Map<String, MessageLookupByLibrary> availableMessages = Map();
+
+  CustomCompositeMessageLookup({this.cacheLocale = true});
+
+  /// Return true if we have a message lookup for [localeName].
+  bool localeExists(localeName) => availableMessages.containsKey(localeName);
+
+  /// The last locale in which we looked up messages.
+  ///
+  ///  If this locale matches the new one then we can skip looking up the
+  ///  messages and assume they will be the same as last time.
+  String? _lastLocale;
+
+  /// Caches the last messages that we found
+  MessageLookupByLibrary? _lastLookup;
+
+  /// Look up the message with the given [name] and [locale] and return the
+  /// translated version with the values in [args] interpolated.  If nothing is
+  /// found, return the result of [ifAbsent] or [messageText].
+  String? lookupMessage(String? messageText, String? locale, String? name, List<Object>? args, String? meaning, {MessageIfAbsent? ifAbsent}) {
+    // If passed null, use the default.
+    var knownLocale = locale ?? Intl.getCurrentLocale();
+    var messages = (knownLocale == _lastLocale) ? _lastLookup : _lookupMessageCatalog(knownLocale);
+    // If we didn't find any messages for this locale, use the original string,
+    // faking interpolations if necessary.
+    if (messages == null) {
+      return ifAbsent == null ? messageText : ifAbsent(messageText, args);
+    }
+    return messages.lookupMessage(messageText, locale, name, args, meaning, ifAbsent: ifAbsent);
+  }
+
+  /// Find the right message lookup for [locale].
+  MessageLookupByLibrary? _lookupMessageCatalog(String locale) {
+    var verifiedLocale = Intl.verifiedLocale(locale, localeExists, onFailure: (locale) => locale);
+    _lastLocale = locale;
+    _lastLookup = availableMessages[verifiedLocale];
+    return _lastLookup;
+  }
+
+  /// If we do not already have a locale for [localeName] then
+  /// [findLocale] will be called and the result stored as the lookup
+  /// mechanism for that locale.
+  void addLocale(String localeName, Function findLocale) {
+    if (localeExists(localeName) && cacheLocale) return;
+    var canonical = Intl.canonicalizedLocale(localeName);
+    var newLocale = findLocale(canonical);
+    if (newLocale != null) {
+      availableMessages[localeName] = newLocale;
+      availableMessages[canonical] = newLocale;
+      // If there was already a failed lookup for [newLocale], null the cache.
+      if (_lastLocale == newLocale) {
+        _lastLocale = null;
+        _lastLookup = null;
+      }
+    }
+  }
+}
+
+/// Delegate to manage locales and flavors
 class IntlDelegate {
   static const defaultFlavorName = 'default';
+
+  // Default locale of your app, this will be use to fallback to this locale
   final String defaultLocale;
+
+  // Default flavor of your app, this will be use to fallback to this flavor
   final String defaultFlavor;
+
+  // Callback to load the ARB data depending on a locale and flavor
   final IntlDataLoader dataLoader;
+
+  // Callback to remote load the ARB data depending on a locale and flavor
   final IntlUpdateDataLoader? updateDataLoader;
 
   //final List<String> supportedFlavors;
-  String currentFlavor = defaultFlavorName;
+  String _currentFlavor = defaultFlavorName;
 
   /*
   IntlDelegate.withRemoteManager({
@@ -133,14 +206,17 @@ class IntlDelegate {
     initializeInternalMessageLookup(() => CompositeMessageLookup());
   }*/
 
+  /// Construct an object that deal with locales and flavors in order to give you the correct translations
+  /// depending on the loaded locales, the current locale and flavor.
   IntlDelegate({
     required this.dataLoader,
     required this.defaultLocale,
     this.updateDataLoader,
     this.defaultFlavor = defaultFlavorName,
+    bool cacheLocale = true,
     //this.supportedFlavors = const [],
   }) {
-    initializeInternalMessageLookup(() => CompositeMessageLookup());
+    initializeInternalMessageLookup(() => CustomCompositeMessageLookup(cacheLocale: cacheLocale));
   }
 
   /// this method will trigger [updateDataLoader] for the needed locales and flavors
@@ -158,14 +234,14 @@ class IntlDelegate {
       if (currentLocale != defaultLocale) {
         final data = await updateDataLoader!(currentLocale, defaultFlavor);
         if (data != null) {
-          loadLocale(currentLocale, data);
+          _loadLocale(currentLocale, data);
           updated = true;
         }
       }
-      if (currentFlavor != defaultFlavor) {
-        final data = await updateDataLoader!(currentLocale, currentFlavor);
+      if (_currentFlavor != defaultFlavor) {
+        final data = await updateDataLoader!(currentLocale, _currentFlavor);
         if (data != null) {
-          loadLocale(currentLocale, data, flavor: currentFlavor);
+          _loadLocale(currentLocale, data, flavor: _currentFlavor);
           updated = true;
         }
       }
@@ -177,36 +253,41 @@ class IntlDelegate {
   /// it will call [dataLoader] to load the locale data needed to do the translations
   Future<void> load(String currentLocale, {String currentFlavor = defaultFlavorName}) async {
     Intl.defaultLocale = currentLocale;
-    this.currentFlavor = currentFlavor;
+    this._currentFlavor = currentFlavor;
     await initializeDateFormatting(Intl.defaultLocale);
 
     final data = await dataLoader(defaultLocale, defaultFlavor);
     _parseMetaData(data);
+    if (currentFlavor != defaultFlavor && currentLocale != defaultLocale) {
+      final data = await dataLoader(defaultLocale, currentFlavor);
+      _loadLocale(defaultLocale, data, flavor: currentFlavor);
+    }
+
     if (currentLocale != defaultLocale) {
       final data = await dataLoader(currentLocale, defaultFlavor);
-      loadLocale(currentLocale, data);
+      _loadLocale(currentLocale, data, flavor: defaultFlavor);
     }
     if (currentFlavor != defaultFlavor) {
       final data = await dataLoader(currentLocale, currentFlavor);
-      loadLocale(currentLocale, data, flavor: currentFlavor);
+      _loadLocale(currentLocale, data, flavor: currentFlavor);
     }
 
     messageLookup.addLocale(
         defaultLocale,
-            (locale) => CustomLookup(
-          localeName: locale,
-          flavorName: currentFlavor,
-          defaultFlavorName: defaultFlavor,
-          defaultLocaleName: defaultLocale,
-        ));
+        (locale) => CustomLookup(
+              localeName: locale,
+              flavorName: currentFlavor,
+              defaultFlavorName: defaultFlavor,
+              defaultLocaleName: defaultLocale,
+            ));
     messageLookup.addLocale(
         currentLocale,
-            (locale) => CustomLookup(
-          localeName: locale,
-          flavorName: currentFlavor,
-          defaultFlavorName: defaultFlavor,
-          defaultLocaleName: defaultLocale,
-        ));
+        (locale) => CustomLookup(
+              localeName: locale,
+              flavorName: currentFlavor,
+              defaultFlavorName: defaultFlavor,
+              defaultLocaleName: defaultLocale,
+            ));
   }
 
   void _parseMetaData(String arbContent) {
@@ -225,20 +306,20 @@ class IntlDelegate {
         }
       }
     });
-    loadLocale(defaultLocale, arbContent);
+    _loadLocale(defaultLocale, arbContent);
   }
 
   /// Load the content of the ARB for the given [locale] and [flavor]
   /// You don't need to call this method yourself except if you need to load translations of locale
   /// that are not part of your [load] call
-  void loadLocale(String locale, String arbContent, {String? flavor}) {
+  void _loadLocale(String locale, String arbContent, {String? flavor}) {
     flavor ??= defaultFlavor;
     final arbData = jsonDecode(arbContent);
 
     Map<String, Message> messages = {};
 
     arbData.forEach((id, messageData) {
-      TranslatedMessage? message = recreateIntlObjects(id, messageData, arbData['@$id'] ?? {});
+      TranslatedMessage? message = _recreateIntlObjects(id, messageData, arbData['@$id'] ?? {});
       if (message != null) {
         messages[message.id] = message.translated!;
       }
@@ -258,22 +339,22 @@ class IntlDelegate {
 /// things that are messages, we expect [id] not to start with "@" and
 /// [data] to be a String. For metadata we expect [id] to start with "@"
 /// and [data] to be a Map or null. For metadata we return null.
-BasicTranslatedMessage? recreateIntlObjects(String id, data, Map metaData) {
+_BasicTranslatedMessage? _recreateIntlObjects(String id, data, Map metaData) {
   if (id.startsWith("@")) return null;
   if (data == null) return null;
-  var parsed = pluralAndGenderParser.parse(data).value;
+  var parsed = _pluralAndGenderParser.parse(data).value;
   if (parsed is LiteralString && parsed.string.isEmpty) {
-    parsed = plainParser.parse(data).value;
+    parsed = _plainParser.parse(data).value;
   }
-  return BasicTranslatedMessage(id, parsed, metaData);
+  return _BasicTranslatedMessage(id, parsed, metaData);
 }
 
 /// A TranslatedMessage that just uses the name as the id and knows how to look
 /// up its original messages in our [messages].
-class BasicTranslatedMessage extends TranslatedMessage {
+class _BasicTranslatedMessage extends TranslatedMessage {
   Map metaData;
 
-  BasicTranslatedMessage(String name, translated, this.metaData) : super(name, translated);
+  _BasicTranslatedMessage(String name, translated, this.metaData) : super(name, translated);
 
   List<MainMessage> get originalMessages => (super.originalMessages.isEmpty) ? _findOriginals() : super.originalMessages;
 
@@ -282,5 +363,5 @@ class BasicTranslatedMessage extends TranslatedMessage {
   List<MainMessage> _findOriginals() => originalMessages = [];
 }
 
-final pluralAndGenderParser = IcuParser().message;
-final plainParser = IcuParser().nonIcuMessage;
+final _pluralAndGenderParser = IcuParser().message;
+final _plainParser = IcuParser().nonIcuMessage;
