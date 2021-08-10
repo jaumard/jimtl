@@ -10,7 +10,8 @@ final Map<String, List<String>> metaData = {};
 // Flavor => Locale => sentences {flavor: {en: {test: message}}}
 final Map<String, Map<String, Map<String, Message>>> _messages = {};
 
-String _getString(String locale, String id, Message message, List<Object> args) {
+String _getString(
+    String locale, String id, Message message, List<Object> args) {
   if (message is LiteralString) {
     return message.string;
   } else if (message is CompositeMessage) {
@@ -21,13 +22,16 @@ String _getString(String locale, String id, Message message, List<Object> args) 
     return s.toString();
   }
   if (message is VariableSubstitution) {
-    final index = metaData[id]!.indexWhere((key) => key.toLowerCase() == message.variableName.toLowerCase());
+    final index = metaData[id]!.indexWhere(
+        (key) => key.toLowerCase() == message.variableName.toLowerCase());
     if (index == -1 && args.length > 1) {
-      throw StateError('No meta data "placeholders_order" found for $id, be sure you generate your ARB with intl_generator or intl_flavors');
+      throw StateError(
+          'No meta data "placeholders_order" found for $id, be sure you generate your ARB with intl_generator or intl_flavors');
     }
     return index == -1 ? args.first.toString() : args[index].toString();
   } else if (message is Gender) {
-    final index = metaData[id]!.indexWhere((key) => key.toLowerCase() == message.mainArgument!.toLowerCase());
+    final index = metaData[id]!.indexWhere(
+        (key) => key.toLowerCase() == message.mainArgument!.toLowerCase());
     return Intl.genderLogic(
       args[index].toString(),
       locale: locale,
@@ -36,7 +40,8 @@ String _getString(String locale, String id, Message message, List<Object> args) 
       female: _getString(locale, id, message.female ?? message.other!, args),
     );
   } else if (message is Plural) {
-    final index = metaData[id]!.indexWhere((key) => key.toLowerCase() == message.mainArgument!.toLowerCase());
+    final index = metaData[id]!.indexWhere(
+        (key) => key.toLowerCase() == message.mainArgument!.toLowerCase());
     return Intl.pluralLogic(
       args[index] as num,
       locale: locale,
@@ -70,7 +75,9 @@ class CustomLookup extends MessageLookupByLibrary {
   Map<String, dynamic> get messages => throw UnimplementedError();
 
   @override
-  String? lookupMessage(String? messageText, String? locale, String? name, List<Object>? args, String? meaning, {MessageIfAbsent? ifAbsent}) {
+  String? lookupMessage(String? messageText, String? locale, String? name,
+      List<Object>? args, String? meaning,
+      {MessageIfAbsent? ifAbsent}) {
     // If passed null, use the default.
     final knownLocale = locale ?? localeName;
 
@@ -82,15 +89,18 @@ class CustomLookup extends MessageLookupByLibrary {
       final defaultMessages = _messages[defaultFlavorName]![knownLocale]!;
       final defaultSentence = defaultMessages[name];
       if (defaultSentence == null) {
-        final defaultMessages = _messages[defaultFlavorName]![defaultLocaleName]!;
+        final defaultMessages =
+            _messages[defaultFlavorName]![defaultLocaleName]!;
         final defaultSentence = defaultMessages[name];
         if (defaultSentence == null) {
           print('no message found for $name, default to $messageText');
           return messageText;
         }
-        return _getString(knownLocale, name.toLowerCase(), defaultSentence, args ?? []);
+        return _getString(
+            knownLocale, name.toLowerCase(), defaultSentence, args ?? []);
       }
-      return _getString(knownLocale, name.toLowerCase(), defaultSentence, args ?? []);
+      return _getString(
+          knownLocale, name.toLowerCase(), defaultSentence, args ?? []);
     }
     return _getString(knownLocale, name.toLowerCase(), sentence, args ?? []);
   }
@@ -110,7 +120,8 @@ typedef IntlDataLoader = Future<String> Function(String locale, String flavor);
 /// use to update ARB data for give [locale] and [flavor]
 /// If it returns null, it mean no update is available
 /// If it returns some content, it will update accordingly
-typedef IntlUpdateDataLoader = Future<String?> Function(String locale, String flavor);
+typedef IntlUpdateDataLoader = Future<String?> Function(
+    String locale, String flavor);
 
 /// This is a message lookup mechanism that delegates to one of a collection
 /// of individual [MessageLookupByLibrary] instances.
@@ -137,21 +148,27 @@ class CustomCompositeMessageLookup implements MessageLookup {
   /// Look up the message with the given [name] and [locale] and return the
   /// translated version with the values in [args] interpolated.  If nothing is
   /// found, return the result of [ifAbsent] or [messageText].
-  String? lookupMessage(String? messageText, String? locale, String? name, List<Object>? args, String? meaning, {MessageIfAbsent? ifAbsent}) {
+  String? lookupMessage(String? messageText, String? locale, String? name,
+      List<Object>? args, String? meaning,
+      {MessageIfAbsent? ifAbsent}) {
     // If passed null, use the default.
     var knownLocale = locale ?? Intl.getCurrentLocale();
-    var messages = (knownLocale == _lastLocale) ? _lastLookup : _lookupMessageCatalog(knownLocale);
+    var messages = (knownLocale == _lastLocale)
+        ? _lastLookup
+        : _lookupMessageCatalog(knownLocale);
     // If we didn't find any messages for this locale, use the original string,
     // faking interpolations if necessary.
     if (messages == null) {
       return ifAbsent == null ? messageText : ifAbsent(messageText, args);
     }
-    return messages.lookupMessage(messageText, locale, name, args, meaning, ifAbsent: ifAbsent);
+    return messages.lookupMessage(messageText, locale, name, args, meaning,
+        ifAbsent: ifAbsent);
   }
 
   /// Find the right message lookup for [locale].
   MessageLookupByLibrary? _lookupMessageCatalog(String locale) {
-    var verifiedLocale = Intl.verifiedLocale(locale, localeExists, onFailure: (locale) => locale);
+    var verifiedLocale = Intl.verifiedLocale(locale, localeExists,
+        onFailure: (locale) => locale);
     _lastLocale = locale;
     _lastLookup = availableMessages[verifiedLocale];
     return _lastLookup;
@@ -195,16 +212,26 @@ class IntlDelegate {
   //final List<String> supportedFlavors;
   String _currentFlavor = defaultFlavorName;
 
-  /*
+  /// Construct a delegate to manage locales and flavors with a remote manager
+  /// That will allow to use external manager to manage OTA cache and download of ARB files.
+  /// See jimtl_localazy as example
   IntlDelegate.withRemoteManager({
     required this.dataLoader,
     required this.defaultLocale,
     required RemoteTranslationsManager localizationManager,
     this.defaultFlavor = defaultFlavorName,
     //this.supportedFlavors = const [],
-  }): updateDataLoader = localizationManager.download {
+  }) : updateDataLoader = ((String locale, String flavor) async {
+          try {
+            return localizationManager.download(locale, flavor);
+          } catch (ex, stack) {
+            print(ex);
+            print(stack);
+            return null;
+          }
+        }) {
     initializeInternalMessageLookup(() => CompositeMessageLookup());
-  }*/
+  }
 
   /// Construct an object that deal with locales and flavors in order to give you the correct translations
   /// depending on the loaded locales, the current locale and flavor.
@@ -216,7 +243,8 @@ class IntlDelegate {
     bool cacheLocale = true,
     //this.supportedFlavors = const [],
   }) {
-    initializeInternalMessageLookup(() => CustomCompositeMessageLookup(cacheLocale: cacheLocale));
+    initializeInternalMessageLookup(
+        () => CustomCompositeMessageLookup(cacheLocale: cacheLocale));
   }
 
   /// this method will trigger [updateDataLoader] for the needed locales and flavors
@@ -251,7 +279,8 @@ class IntlDelegate {
 
   /// Init Intl with the [currentLocale] and [currentFlavor],
   /// it will call [dataLoader] to load the locale data needed to do the translations
-  Future<void> load(String currentLocale, {String currentFlavor = defaultFlavorName}) async {
+  Future<void> load(String currentLocale,
+      {String currentFlavor = defaultFlavorName}) async {
     Intl.defaultLocale = currentLocale;
     this._currentFlavor = currentFlavor;
     await initializeDateFormatting(Intl.defaultLocale);
@@ -298,11 +327,17 @@ class IntlDelegate {
       }
       if (id.startsWith('@')) {
         if (messageData.containsKey('placeholders_order')) {
-          metaData[id.substring(1).toLowerCase()] = messageData['placeholders_order']!.cast<String>();
+          metaData[id.substring(1).toLowerCase()] =
+              messageData['placeholders_order']!.cast<String>();
         } else if (messageData.containsKey('placeholders')) {
-          metaData[id.substring(1).toLowerCase()] = Map.from(messageData['placeholders']!).keys.cast<String>().toList();
+          metaData[id.substring(1).toLowerCase()] =
+              Map.from(messageData['placeholders']!)
+                  .keys
+                  .cast<String>()
+                  .toList();
         } else {
-          throw StateError('No metadata in ARB for $id, metadata are used to know arguments order, it\'s mandatory');
+          throw StateError(
+              'No metadata in ARB for $id, metadata are used to know arguments order, it\'s mandatory');
         }
       }
     });
@@ -319,7 +354,8 @@ class IntlDelegate {
     Map<String, Message> messages = {};
 
     arbData.forEach((id, messageData) {
-      TranslatedMessage? message = _recreateIntlObjects(id, messageData, arbData['@$id'] ?? {});
+      TranslatedMessage? message =
+          _recreateIntlObjects(id, messageData, arbData['@$id'] ?? {});
       if (message != null) {
         messages[message.id] = message.translated!;
       }
@@ -354,9 +390,12 @@ _BasicTranslatedMessage? _recreateIntlObjects(String id, data, Map metaData) {
 class _BasicTranslatedMessage extends TranslatedMessage {
   Map metaData;
 
-  _BasicTranslatedMessage(String name, translated, this.metaData) : super(name, translated);
+  _BasicTranslatedMessage(String name, translated, this.metaData)
+      : super(name, translated);
 
-  List<MainMessage> get originalMessages => (super.originalMessages.isEmpty) ? _findOriginals() : super.originalMessages;
+  List<MainMessage> get originalMessages => (super.originalMessages.isEmpty)
+      ? _findOriginals()
+      : super.originalMessages;
 
   // We know that our [id] is the name of the message, which is used as the
   //key in [messages].

@@ -12,10 +12,11 @@ late LocalazyCdnManager localazy;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   localazy = LocalazyCdnManager(
-    cdnId: '_a860213072293210453319c546c5',
+    cdnId: 'CDI_ID_HERE',
     getFileName: (String locale, String flavor) {
       return 'translations.arb';
     },
+    //configCacheDuration: Duration(seconds: 30),
     cacheFolder: path.join((await getTemporaryDirectory()).path, 'translations'),
   );
   runApp(MyApp());
@@ -75,6 +76,8 @@ class _MyAppState extends State<MyApp> {
             }
             return await rootBundle.loadString('assets/arb/translations_${flavor}_$locale.arb');
           },
+          /*
+          //manual download of OTA ARB files if default constructor is used
           updateDataLoader: (locale, flavor) async {
             print('Remote load $locale and $flavor');
 
@@ -83,7 +86,7 @@ class _MyAppState extends State<MyApp> {
             } catch (ex) {
               return null;
             }
-          },
+          },*/
           defaultFlavor: IntlDelegate.defaultFlavorName,
           translationsBuilder: () => Translations(),
         ),

@@ -5,17 +5,22 @@ import 'package:jimtl/jimtl.dart';
 
 /// use to update ARB data for give [locale] and [flavor]
 /// It returns some content to save in memory
-typedef FlutterIntlDataLoader = Future<String> Function(Locale locale, String flavor);
+typedef FlutterIntlDataLoader = Future<String> Function(
+    Locale locale, String flavor);
 
 /// use to update ARB data for give [locale] and [flavor]
 /// If it returns null, it mean no update is available
 /// If it returns some content, it will update accordingly
-typedef FlutterIntlUpdateDataLoader = Future<String?> Function(Locale locale, String flavor);
+typedef FlutterIntlUpdateDataLoader = Future<String?> Function(
+    Locale locale, String flavor);
 
 Locale _parseLocale(String locale) {
   final parser = LocaleParser(locale);
   final newLocale = parser.toLocale()!;
-  return Locale.fromSubtags(languageCode: newLocale.languageCode, countryCode: newLocale.countryCode, scriptCode: newLocale.scriptCode);
+  return Locale.fromSubtags(
+      languageCode: newLocale.languageCode,
+      countryCode: newLocale.countryCode,
+      scriptCode: newLocale.scriptCode);
 }
 
 /// LocalizationsDelegate that allow you to load ARB files on the fly
@@ -64,6 +69,27 @@ class TranslationsDelegate<T> extends LocalizationsDelegate<T> {
           //supportedFlavors: supportedFlavors,
         );
 
+  TranslationsDelegate.withRemoteManager({
+    required Locale defaultLocale,
+    this.currentFlavor = IntlDelegate.defaultFlavorName,
+    this.overrideCurrentLocale,
+    String defaultFlavor = IntlDelegate.defaultFlavorName,
+    required FlutterIntlDataLoader dataLoader,
+    required RemoteTranslationsManager localizationManager,
+    required this.translationsBuilder,
+    this.onTranslationsUpdated,
+    //List<String> supportedFlavors = const [],
+    this.supportedLocales = const [],
+  }) : _delegate = IntlDelegate.withRemoteManager(
+          defaultLocale: defaultLocale.toString(),
+          dataLoader: (locale, flavor) {
+            return dataLoader(_parseLocale(locale), flavor);
+          },
+          localizationManager: localizationManager,
+          defaultFlavor: defaultFlavor,
+          //supportedFlavors: supportedFlavors,
+        );
+
   @override
   bool isSupported(Locale locale) {
     return supportedLocales.contains(locale);
@@ -77,7 +103,8 @@ class TranslationsDelegate<T> extends LocalizationsDelegate<T> {
 
   @override
   Future<T> load(Locale locale) async {
-    await _delegate.load(overrideCurrentLocale?.toString() ?? locale.toString(), currentFlavor: currentFlavor);
+    await _delegate.load(overrideCurrentLocale?.toString() ?? locale.toString(),
+        currentFlavor: currentFlavor);
     _askForUpdate();
     return translationsBuilder();
   }

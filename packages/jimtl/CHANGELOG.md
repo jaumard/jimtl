@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.4
+
+* add remote localization manager support
+
 ## 0.0.3
 
 * fix case sensitive issue causing crash

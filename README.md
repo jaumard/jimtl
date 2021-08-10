@@ -1,4 +1,4 @@
-# jimtl
+# flutter_jimtl
 
 If you are tired of manually writing ARB files or the limited Flutter localization support you are in the right place.
 

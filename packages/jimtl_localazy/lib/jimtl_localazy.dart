@@ -1,4 +1,4 @@
 library jimtl_localazy;
 
 export 'src/cdn.dart';
-export 'src/ota.dart';
+//FIXME not supported yet export 'src/ota.dart';

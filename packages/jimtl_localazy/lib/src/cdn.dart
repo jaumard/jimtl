@@ -60,7 +60,10 @@ class LocalazyFile {
     return LocalazyFile(
       id: id,
       file: data['file'],
-      locales: data['locales'].map((data) => LocalazyLocale.fromJSON(data)).cast<LocalazyLocale>().toList(growable: false),
+      locales: data['locales']
+          .map((data) => LocalazyLocale.fromJSON(data))
+          .cast<LocalazyLocale>()
+          .toList(growable: false),
       buildType: data['buildType'],
       module: data['module'],
       library: data['library'],
@@ -76,108 +79,164 @@ class LocalazyConfig {
   LocalazyConfig(this.files);
 
   factory LocalazyConfig.fromJSON(Map<String, dynamic> json) {
-    return LocalazyConfig(json.entries.map((entry) => LocalazyFile.fromJSON(entry.key, entry.value)).toList(growable: false));
+    return LocalazyConfig(json['files']
+        .entries
+        .map((entry) => LocalazyFile.fromJSON(entry.key, entry.value))
+        .toList(growable: false)
+        .cast<LocalazyFile>());
   }
 }
 
 class LocalazyCdnManager extends RemoteTranslationsManager {
+  /// CDN ID of your localazy project, you can find it by running localazy cdn and get it from the URI
   final String cdnId;
+
+  /// Cache duration for localazy config file
+  /// Default to one day
+  final Duration configCacheDuration;
+
+  /// Folder where to save cache and config files
   final String cacheFolder;
+
+  /// Callback to get the name of the file based on the locale and flavor
   final String Function(String locale, String flavor) getFileName;
+
+  /// Callback if you want to search the correct file manually
   final LocalazyLocale Function(LocalazyConfig config)? customFileSearch;
   static final String _host = 'https://delivery.localazy.com';
-  static final _configUrl = (String id) => '$_host/${id}/_e0.json';
+  static final _configUrl = (String id) => '$_host/${id}/_e0.v2.json';
   static final Map<String, int> _cacheConfig = {};
 
+  /// Construct a localazy CDN manage for the localization files
   LocalazyCdnManager({
     required this.cacheFolder,
     required this.cdnId,
     required this.getFileName,
     this.customFileSearch,
+    this.configCacheDuration = const Duration(days: 1),
   });
 
+  String get _configFileName => '${cdnId}_config.json';
+
+  String get _remoteConfigFileName => '${cdnId}_remote_config.json';
+
   @override
+
+  /// Download the correct file based on locale and flavor
+  /// It will get the localazy CDN config file and then search the right file based on [getFileName]
+  /// or [customFileSearch].
+  /// Returns null if nothing have been found on localazy
+  /// Returns ARB content from cache or from localazy CDN depending if file have changed since last download
+  /// Can throw [StateError] if no file match the given name of [getFileName] and [locale]/[flavor]
   Future<String?> download(String locale, String flavor) async {
-    final response = await http.get(Uri.parse(_configUrl(cdnId)));
-
-    if (response.statusCode == 200) {
-      // If the server did return a 200 OK response,
-      // then parse the JSON.
-      final file = getFileName(locale, flavor);
-      final configData = LocalazyConfig.fromJSON(jsonDecode(response.body));
-      LocalazyLocale? wantedLocale;
-      if (customFileSearch == null) {
-        final wantedFile = configData.files.firstWhereOrNull((element) {
-          final nameOk = element.file.toLowerCase() == file.toLowerCase();
-          if (flavor.isEmpty || flavor == IntlDelegate.defaultFlavorName) {
-            return nameOk;
-          } else {
-            final flavorOk = element.productFlavors.firstWhereOrNull((element) => element.contains(':${flavor}')) != null;
-            final libOk = element.library == flavor;
-            final moduleOk = element.module == flavor;
-            final buildOk = element.buildType == flavor;
-            return nameOk && (flavorOk || libOk || moduleOk || buildOk);
-          }
-        });
-        if (wantedFile == null) {
-          throw StateError('"$file" is not found on Localazy for flavor "$flavor"');
-        }
-        wantedLocale = wantedFile.locales.firstWhereOrNull((element) {
-          final fileLocale = element.region.isEmpty ? element.language : '${element.language}_${element.region}';
-          return fileLocale.toLowerCase() == locale.toLowerCase();
-        });
-      } else {
-        wantedLocale = customFileSearch!(configData);
+    if (_cacheConfig.isEmpty) {
+      await _loadCacheConfig();
+    }
+    final configFile = File(path.join(cacheFolder, _remoteConfigFileName));
+    final now =
+        DateTime.now().subtract(configCacheDuration).millisecondsSinceEpoch;
+    String? content;
+    if (now > (_cacheConfig[_remoteConfigFileName] ?? 0)) {
+      final response = await http.get(Uri.parse(_configUrl(cdnId)));
+      if (response.statusCode == 200) {
+        content = response.body;
+        await configFile.writeAsString(content);
+        _cacheConfig[_remoteConfigFileName] =
+            DateTime.now().millisecondsSinceEpoch;
+        await _saveCacheConfig();
       }
-      if (wantedLocale == null) {
-        throw StateError('"$locale" is not found on Localazy for file $file and flavor $flavor');
-      } else {
-        final timestamp = await _getTimestamp(wantedLocale, file);
+    } else {
+      content = await configFile.readAsString();
+    }
 
-        if (timestamp < wantedLocale.timestamp || timestamp == 0) {
-          final localeResponse = await http.get(Uri.parse('$_host${wantedLocale.uri}'));
-          if (response.statusCode == 200) {
-            await _saveInCache(localeResponse.body, wantedLocale, file);
-            await _setTimestamp(wantedLocale.timestamp, wantedLocale, file);
-            return utf8.decode(localeResponse.bodyBytes);
-          }
+    if (content == null) {
+      return null;
+    }
+    // then parse the JSON.
+    final fileToSearch = getFileName(locale, flavor);
+    final configData = LocalazyConfig.fromJSON(jsonDecode(content));
+    LocalazyLocale? wantedLocale;
+    if (customFileSearch == null) {
+      final wantedFile = configData.files.firstWhereOrNull((element) {
+        final nameOk = element.file.toLowerCase() == fileToSearch.toLowerCase();
+        if (flavor.isEmpty || flavor == IntlDelegate.defaultFlavorName) {
+          return nameOk;
         } else {
-          return _readFromCache(wantedLocale, file);
+          final flavorOk = element.productFlavors.firstWhereOrNull(
+                  (element) => element.contains(':${flavor}')) !=
+              null;
+          final libOk = element.library == flavor;
+          final moduleOk = element.module == flavor;
+          final buildOk = element.buildType == flavor;
+          return nameOk && (flavorOk || libOk || moduleOk || buildOk);
         }
+      });
+      if (wantedFile == null) {
+        throw StateError(
+            '"$fileToSearch" is not found on Localazy for flavor "$flavor"');
+      }
+      wantedLocale = wantedFile.locales.firstWhereOrNull((element) {
+        final fileLocale = element.region.isEmpty
+            ? element.language
+            : '${element.language}_${element.region}';
+        return fileLocale.toLowerCase() == locale.toLowerCase();
+      });
+    } else {
+      wantedLocale = customFileSearch!(configData);
+    }
+    if (wantedLocale == null) {
+      throw StateError(
+          '"$locale" is not found on Localazy for file $fileToSearch and flavor $flavor');
+    } else {
+      final timestamp = await _getTimestamp(wantedLocale, fileToSearch);
+
+      if (timestamp < wantedLocale.timestamp || timestamp == 0) {
+        final localeResponse =
+            await http.get(Uri.parse('$_host${wantedLocale.uri}'));
+        if (localeResponse.statusCode == 200) {
+          await _saveInCache(localeResponse.body, wantedLocale, fileToSearch);
+          await _setTimestamp(
+              wantedLocale.timestamp, wantedLocale, fileToSearch);
+          return utf8.decode(localeResponse.bodyBytes);
+        }
+      } else {
+        return _readFromCache(wantedLocale, fileToSearch);
       }
     }
-    return null;
   }
 
-  Future<void> _saveInCache(String content, LocalazyLocale file, String name) async {
-    final arbFile = await File(path.join(cacheFolder, '${cdnId}_${file.language}${file.region}_${name}'));
+  Future<void> _saveInCache(
+      String content, LocalazyLocale file, String name) async {
+    final arbFile = File(path.join(
+        cacheFolder, '${cdnId}_${file.language}${file.region}_${name}'));
     await arbFile.writeAsString(content);
   }
 
   Future<String> _readFromCache(LocalazyLocale file, String name) async {
-    final arbFile = await File(path.join(cacheFolder, '${cdnId}_${file.language}${file.region}_${name}'));
+    final arbFile = File(path.join(
+        cacheFolder, '${cdnId}_${file.language}${file.region}_${name}'));
     return await arbFile.readAsString();
   }
 
   Future<int> _getTimestamp(LocalazyLocale file, String name) async {
-    if (_cacheConfig.isEmpty) {
-      _loadCacheConfig();
-    }
     return _cacheConfig['${cdnId}_${name}_${file.language}${file.region}'] ?? 0;
   }
 
-  Future<void> _setTimestamp(int timestamp, LocalazyLocale file, String name) async {
+  Future<void> _setTimestamp(
+      int timestamp, LocalazyLocale file, String name) async {
     _cacheConfig['${cdnId}_${name}_${file.language}${file.region}'] = timestamp;
     await _saveCacheConfig();
   }
 
   Future<void> _saveCacheConfig() async {
-    final file = await File(path.join(cacheFolder, '${cdnId}_config.json')).create(recursive: true);
+    final file = await File(path.join(cacheFolder, _configFileName))
+        .create(recursive: true);
     await file.writeAsString(jsonEncode(_cacheConfig));
   }
 
   Future<void> _loadCacheConfig() async {
-    final file = await File(path.join(cacheFolder, '${cdnId}_config.json')).create(recursive: true);
+    final file = await File(path.join(cacheFolder, _configFileName))
+        .create(recursive: true);
     final content = await file.readAsString();
     if (content.isNotEmpty) {
       _cacheConfig.addAll(jsonDecode(content).cast<String, int>());
