@@ -1,6 +1,6 @@
 name: jimtl_localazy
 description: Localazy support for jimtl remote translations
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/jaumard/jimtl
 
 environment:

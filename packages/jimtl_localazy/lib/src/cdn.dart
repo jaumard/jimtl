@@ -120,15 +120,16 @@ class LocalazyCdnManager extends RemoteTranslationsManager {
 
   String get _remoteConfigFileName => '${cdnId}_remote_config.json';
 
-  @override
-
   /// Download the correct file based on locale and flavor
   /// It will get the localazy CDN config file and then search the right file based on [getFileName]
   /// or [customFileSearch].
   /// Returns null if nothing have been found on localazy
   /// Returns ARB content from cache or from localazy CDN depending if file have changed since last download
   /// Can throw [StateError] if no file match the given name of [getFileName] and [locale]/[flavor]
-  Future<String?> download(String locale, String flavor) async {
+  /// [overrideFileName] can be used if you need multiple localization delegate on your flutter app that use one localazy manager but for multiple filek
+  @override
+  Future<String?> download(String locale, String flavor,
+      {String? overrideFileName}) async {
     if (_cacheConfig.isEmpty) {
       await _loadCacheConfig();
     }
@@ -153,7 +154,8 @@ class LocalazyCdnManager extends RemoteTranslationsManager {
       return null;
     }
     // then parse the JSON.
-    final fileToSearch = getFileName(locale, flavor);
+    final fileToSearch = overrideFileName ?? getFileName(locale, flavor);
+    print('$fileToSearch for $locale and $flavor');
     final configData = LocalazyConfig.fromJSON(jsonDecode(content));
     LocalazyLocale? wantedLocale;
     if (customFileSearch == null) {
@@ -194,10 +196,11 @@ class LocalazyCdnManager extends RemoteTranslationsManager {
         final localeResponse =
             await http.get(Uri.parse('$_host${wantedLocale.uri}'));
         if (localeResponse.statusCode == 200) {
-          await _saveInCache(localeResponse.body, wantedLocale, fileToSearch);
+          final content = utf8.decode(localeResponse.bodyBytes);
+          await _saveInCache(content, wantedLocale, fileToSearch);
           await _setTimestamp(
               wantedLocale.timestamp, wantedLocale, fileToSearch);
-          return utf8.decode(localeResponse.bodyBytes);
+          return content;
         }
       } else {
         return _readFromCache(wantedLocale, fileToSearch);
