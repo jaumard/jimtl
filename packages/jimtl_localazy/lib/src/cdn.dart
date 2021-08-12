@@ -140,7 +140,7 @@ class LocalazyCdnManager extends RemoteTranslationsManager {
     if (now > (_cacheConfig[_remoteConfigFileName] ?? 0)) {
       final response = await http.get(Uri.parse(_configUrl(cdnId)));
       if (response.statusCode == 200) {
-        content = response.body;
+        content = utf8.decode(response.bodyBytes);
         await configFile.writeAsString(content);
         _cacheConfig[_remoteConfigFileName] =
             DateTime.now().millisecondsSinceEpoch;
@@ -155,7 +155,7 @@ class LocalazyCdnManager extends RemoteTranslationsManager {
     }
     // then parse the JSON.
     final fileToSearch = overrideFileName ?? getFileName(locale, flavor);
-    print('$fileToSearch for $locale and $flavor');
+    //print('$fileToSearch for $locale and $flavor');
     final configData = LocalazyConfig.fromJSON(jsonDecode(content));
     LocalazyLocale? wantedLocale;
     if (customFileSearch == null) {
