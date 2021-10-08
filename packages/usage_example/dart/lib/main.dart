@@ -25,6 +25,8 @@ main() async {
   print(translations.genderComplex('male', 'data'));
   print(translations.testAndPlural(1));
   print(translations.pluralComplex('test', 2));
+  print('');
+  print(delegate.get('test'));
 }
 
 @GenerateArb(

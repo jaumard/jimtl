@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.5
+
+* add method to retrieve translated sentence by ID
+* on error callback in case something is wrong loading data
+
 ## 0.0.4
 
 * add remote localization manager support

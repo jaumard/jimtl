@@ -209,6 +209,9 @@ class IntlDelegate {
   // Callback to remote load the ARB data depending on a locale and flavor
   final IntlUpdateDataLoader? updateDataLoader;
 
+  /// Callback to create your Localization file, it will be called when needed by Flutter
+  final void Function(dynamic err, dynamic stack)? onError;
+
   //final List<String> supportedFlavors;
   String _currentFlavor = defaultFlavorName;
 
@@ -220,6 +223,7 @@ class IntlDelegate {
     required this.defaultLocale,
     required RemoteTranslationsManager localizationManager,
     this.defaultFlavor = defaultFlavorName,
+    this.onError,
     //this.supportedFlavors = const [],
   }) : updateDataLoader = ((String locale, String flavor) async {
           try {
@@ -230,7 +234,7 @@ class IntlDelegate {
             return null;
           }
         }) {
-    initializeInternalMessageLookup(() => CompositeMessageLookup());
+    initializeInternalMessageLookup(() => CustomCompositeMessageLookup());
   }
 
   /// Construct an object that deal with locales and flavors in order to give you the correct translations
@@ -241,10 +245,18 @@ class IntlDelegate {
     this.updateDataLoader,
     this.defaultFlavor = defaultFlavorName,
     bool cacheLocale = true,
+    this.onError,
     //this.supportedFlavors = const [],
   }) {
     initializeInternalMessageLookup(
         () => CustomCompositeMessageLookup(cacheLocale: cacheLocale));
+  }
+
+  /// Get translated sentence by id/name
+  /// Returns translated sentence or null if not found
+  String? get(String id,
+      {String? locale, List<Object>? args, String fallback = ''}) {
+    return Intl.message(fallback, name: id, locale: locale, args: args);
   }
 
   /// this method will trigger [updateDataLoader] for the needed locales and flavors
@@ -256,21 +268,33 @@ class IntlDelegate {
       final currentLocale = Intl.defaultLocale!;
       final data = await updateDataLoader!(defaultLocale, defaultFlavor);
       if (data != null) {
-        _parseMetaData(data);
-        updated = true;
+        try {
+          _parseMetaData(data);
+          updated = true;
+        } catch (e, stack) {
+          onError?.call(e, stack);
+        }
       }
       if (currentLocale != defaultLocale) {
         final data = await updateDataLoader!(currentLocale, defaultFlavor);
         if (data != null) {
-          _loadLocale(currentLocale, data);
-          updated = true;
+          try {
+            _loadLocale(currentLocale, data);
+            updated = true;
+          } catch (e, stack) {
+            onError?.call(e, stack);
+          }
         }
       }
       if (_currentFlavor != defaultFlavor) {
         final data = await updateDataLoader!(currentLocale, _currentFlavor);
         if (data != null) {
-          _loadLocale(currentLocale, data, flavor: _currentFlavor);
-          updated = true;
+          try {
+            _loadLocale(currentLocale, data, flavor: _currentFlavor);
+            updated = true;
+          } catch (e, stack) {
+            onError?.call(e, stack);
+          }
         }
       }
     }
@@ -285,20 +309,24 @@ class IntlDelegate {
     this._currentFlavor = currentFlavor;
     await initializeDateFormatting(Intl.defaultLocale);
 
-    final data = await dataLoader(defaultLocale, defaultFlavor);
-    _parseMetaData(data);
-    if (currentFlavor != defaultFlavor && currentLocale != defaultLocale) {
-      final data = await dataLoader(defaultLocale, currentFlavor);
-      _loadLocale(defaultLocale, data, flavor: currentFlavor);
-    }
+    try {
+      final data = await dataLoader(defaultLocale, defaultFlavor);
+      _parseMetaData(data);
+      if (currentFlavor != defaultFlavor && currentLocale != defaultLocale) {
+        final data = await dataLoader(defaultLocale, currentFlavor);
+        _loadLocale(defaultLocale, data, flavor: currentFlavor);
+      }
 
-    if (currentLocale != defaultLocale) {
-      final data = await dataLoader(currentLocale, defaultFlavor);
-      _loadLocale(currentLocale, data, flavor: defaultFlavor);
-    }
-    if (currentFlavor != defaultFlavor) {
-      final data = await dataLoader(currentLocale, currentFlavor);
-      _loadLocale(currentLocale, data, flavor: currentFlavor);
+      if (currentLocale != defaultLocale) {
+        final data = await dataLoader(currentLocale, defaultFlavor);
+        _loadLocale(currentLocale, data, flavor: defaultFlavor);
+      }
+      if (currentFlavor != defaultFlavor) {
+        final data = await dataLoader(currentLocale, currentFlavor);
+        _loadLocale(currentLocale, data, flavor: currentFlavor);
+      }
+    } catch (e, stack) {
+      onError?.call(e, stack);
     }
 
     messageLookup.addLocale(

@@ -120,6 +120,17 @@ class LocalazyCdnManager extends RemoteTranslationsManager {
 
   String get _remoteConfigFileName => '${cdnId}_remote_config.json';
 
+  Future<void> clearCache() async {
+    final folder = Directory(cacheFolder);
+    final exist = await folder.exists();
+    if (exist) {
+      final files = folder.listSync();
+      for (var file in files) {
+        await file.delete(recursive: true);
+      }
+    }
+  }
+
   /// Download the correct file based on locale and flavor
   /// It will get the localazy CDN config file and then search the right file based on [getFileName]
   /// or [customFileSearch].
@@ -133,7 +144,8 @@ class LocalazyCdnManager extends RemoteTranslationsManager {
     if (_cacheConfig.isEmpty) {
       await _loadCacheConfig();
     }
-    final configFile = File(path.join(cacheFolder, _remoteConfigFileName));
+    final remoteConfigFile =
+        File(path.join(cacheFolder, _remoteConfigFileName));
     final now =
         DateTime.now().subtract(configCacheDuration).millisecondsSinceEpoch;
     String? content;
@@ -141,13 +153,13 @@ class LocalazyCdnManager extends RemoteTranslationsManager {
       final response = await http.get(Uri.parse(_configUrl(cdnId)));
       if (response.statusCode == 200) {
         content = utf8.decode(response.bodyBytes);
-        await configFile.writeAsString(content);
+        await remoteConfigFile.writeAsString(content);
         _cacheConfig[_remoteConfigFileName] =
             DateTime.now().millisecondsSinceEpoch;
         await _saveCacheConfig();
       }
     } else {
-      content = await configFile.readAsString();
+      content = await remoteConfigFile.readAsString();
     }
 
     if (content == null) {

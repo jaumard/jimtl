@@ -37,6 +37,9 @@ class TranslationsDelegate<T> extends LocalizationsDelegate<T> {
   /// Callback to create your Localization file, it will be called when needed by Flutter
   final T Function() translationsBuilder;
 
+  /// Callback to create your Localization file, it will be called when needed by Flutter
+  final void Function(dynamic err, dynamic stack)? onError;
+
   /// Callback that will be called when translations are updated, it means you need to rebuild your app in order to see those
   final VoidCallback? onTranslationsUpdated;
   final IntlDelegate _delegate;
@@ -47,6 +50,7 @@ class TranslationsDelegate<T> extends LocalizationsDelegate<T> {
     required Locale defaultLocale,
     this.currentFlavor = IntlDelegate.defaultFlavorName,
     this.overrideCurrentLocale,
+    this.onError,
     String defaultFlavor = IntlDelegate.defaultFlavorName,
     required FlutterIntlDataLoader dataLoader,
     FlutterIntlUpdateDataLoader? updateDataLoader,
@@ -56,6 +60,7 @@ class TranslationsDelegate<T> extends LocalizationsDelegate<T> {
     this.supportedLocales = const [],
   }) : _delegate = IntlDelegate(
           defaultLocale: defaultLocale.toString(),
+          onError: onError,
           dataLoader: (locale, flavor) {
             return dataLoader(_parseLocale(locale), flavor);
           },
@@ -77,11 +82,13 @@ class TranslationsDelegate<T> extends LocalizationsDelegate<T> {
     required FlutterIntlDataLoader dataLoader,
     required RemoteTranslationsManager localizationManager,
     required this.translationsBuilder,
+    this.onError,
     this.onTranslationsUpdated,
     //List<String> supportedFlavors = const [],
     this.supportedLocales = const [],
   }) : _delegate = IntlDelegate.withRemoteManager(
           defaultLocale: defaultLocale.toString(),
+          onError: onError,
           dataLoader: (locale, flavor) {
             return dataLoader(_parseLocale(locale), flavor);
           },
@@ -95,9 +102,17 @@ class TranslationsDelegate<T> extends LocalizationsDelegate<T> {
     return supportedLocales.contains(locale);
   }
 
+  String? get(String id, {String? locale, List<Object>? args, String fallback = ''}) {
+    return _delegate.get(id, locale: locale, args: args, fallback: fallback);
+  }
+
   void _askForUpdate() async {
-    if (await _delegate.askForUpdate()) {
-      onTranslationsUpdated?.call();
+    try {
+      if (await _delegate.askForUpdate()) {
+        onTranslationsUpdated?.call();
+      }
+    } catch (e, stack) {
+      this.onError?.call(e, stack);
     }
   }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.3
+
+* Add clearCache method
+
 ## 0.0.2
 
 * Add a way to override the searched file name on download method

@@ -12,7 +12,7 @@ late LocalazyCdnManager localazy;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   localazy = LocalazyCdnManager(
-    cdnId: 'CDI_ID_HERE',
+    cdnId: '_a860213072293210453319c546c5',
     getFileName: (String locale, String flavor) {
       return 'translations.arb';
     },
