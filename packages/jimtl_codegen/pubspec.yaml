@@ -1,13 +1,13 @@
 name: jimtl_codegen
 description: Intl utility to generate ARB files from Dart intl class
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/jaumard/jimtl
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
-  analyzer: ">=2.1.0 <3.0.0"
+  analyzer: ">=4.0.0 <5.0.0"
   build: ">=2.0.1 <3.0.0"
   path: ">=1.8.0 <2.0.0"
   source_gen: ">=1.0.0 <2.0.0"
