@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.4
+
+* Update deps
+
 ## 0.0.3
 
 * Update deps

@@ -7,14 +7,14 @@ packages:
       name: _fe_analyzer_shared
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "40.0.0"
+    version: "50.0.0"
   analyzer:
     dependency: transitive
     description:
       name: analyzer
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.1.0"
+    version: "5.2.0"
   args:
     dependency: transitive
     description:
@@ -77,7 +77,7 @@ packages:
       name: dart_style
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.2.3"
+    version: "2.2.4"
   file:
     dependency: transitive
     description:
@@ -126,7 +126,7 @@ packages:
       name: intl_generator
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.0"
+    version: "0.4.1"
   io:
     dependency: transitive
     description:
@@ -294,21 +294,21 @@ packages:
       name: test
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.21.1"
+    version: "1.22.1"
   test_api:
     dependency: transitive
     description:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.9"
+    version: "0.4.17"
   test_core:
     dependency: transitive
     description:
       name: test_core
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.13"
+    version: "0.4.21"
   typed_data:
     dependency: transitive
     description:
@@ -352,4 +352,4 @@ packages:
     source: hosted
     version: "3.1.1"
 sdks:
-  dart: ">=2.16.0 <3.0.0"
+  dart: ">=2.18.0 <3.0.0"

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.7
+
+* update deps
+
 ## 0.0.5
 
 * add method to retrieve translated sentence by ID
